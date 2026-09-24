@@ -208,7 +208,7 @@ export default function CrudBuilderPage() {
   return (
     <div className="mx-auto max-w-6xl space-y-5">
       <div>
-        <h2 className="text-xl font-semibold text-slate-900">CRUD Builder xyz</h2>
+        <h2 className="text-xl font-semibold text-slate-900">CRUD Builder</h2>
         <p className="text-sm text-slate-500">
           Create a new module step by step. Complete each step, then continue.
         </p>
