@@ -1,0 +1,54 @@
+<?php
+
+namespace App\Http\Controllers\Api;
+
+use App\Http\Controllers\Controller;
+use App\Http\Requests\{{ model }}\{{ store_request }};
+use App\Http\Requests\{{ model }}\{{ update_request }};
+use App\Http\Resources\{{ resource }};
+use App\Services\{{ service }};
+use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
+use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
+
+class {{ class }} extends Controller
+{
+    public function __construct(
+        protected {{ service }} $service
+    ) {}
+
+    public function index(Request $request): AnonymousResourceCollection
+    {
+        $items = $this->service->list($request->all());
+
+        return {{ resource }}::collection($items);
+    }
+
+    public function store({{ store_request }} $request): JsonResponse
+    {
+        $item = $this->service->create($request->validated());
+
+        return (new {{ resource }}($item))
+            ->response()
+            ->setStatusCode(201);
+    }
+
+    public function show(int $id): {{ resource }}
+    {
+        return new {{ resource }}($this->service->find($id));
+    }
+
+    public function update({{ update_request }} $request, int $id): {{ resource }}
+    {
+        $item = $this->service->update($this->service->find($id), $request->validated());
+
+        return new {{ resource }}($item);
+    }
+
+    public function destroy(int $id): JsonResponse
+    {
+        $this->service->delete($this->service->find($id));
+
+        return response()->json(['message' => 'Deleted successfully.']);
+    }
+}

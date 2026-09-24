@@ -1,0 +1,16 @@
+<?php
+
+namespace {{ namespace }};
+
+{{ imports }}
+
+class {{ class }} extends Model
+{
+{{ traits }}
+    protected $table = '{{ table }}';
+
+    protected $fillable = [
+{{ fillable }}
+    ];
+{{ casts }}{{ relationships }}
+}

@@ -1,0 +1,6 @@
+<?php
+
+use App\Http\Controllers\Api\{{ controller }};
+use Illuminate\Support\Facades\Route;
+
+Route::apiResource('{{ api_prefix }}', {{ controller }}::class);
