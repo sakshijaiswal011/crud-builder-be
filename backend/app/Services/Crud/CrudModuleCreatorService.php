@@ -6,14 +6,16 @@ use App\Models\CrudFormList;
 use App\Models\CrudModule;
 use App\Models\CrudModulePermission;
 use App\Services\AuditLogService;
+use App\Services\SpatiePermissionSyncService;
+use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\DB;
-use \Illuminate\Support\Facades\Artisan;
 
 class CrudModuleCreatorService
 {
     public function __construct(
         protected CrudGenerator $generator,
-        protected AuditLogService $auditLogService
+        protected AuditLogService $auditLogService,
+        protected SpatiePermissionSyncService $spatiePermissionSyncService
     ) {}
 
     /**
@@ -52,6 +54,8 @@ class CrudModuleCreatorService
 
         $this->auditLogService->logModuleCreated($module);
 
+        $spatiePermissions = $this->spatiePermissionSyncService->syncModulePermissions($module);
+
         return [
             'module' => $module->fresh()->load([
                 'fields',
@@ -60,6 +64,7 @@ class CrudModuleCreatorService
                 'permissions',
             ]),
             'generated' => $generated,
+            'spatie_permissions' => $spatiePermissions,
         ];
     }
 

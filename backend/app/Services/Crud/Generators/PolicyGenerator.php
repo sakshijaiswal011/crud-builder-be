@@ -25,6 +25,7 @@ class PolicyGenerator
                 'model' => $model,
                 'model_fqcn' => $this->names->modelFqcn($module),
                 'variable' => $this->names->variable($module),
+                'permission_prefix' => $module->slug,
             ]
         );
     }

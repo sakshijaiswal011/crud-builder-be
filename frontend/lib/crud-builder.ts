@@ -160,7 +160,7 @@ export function createDefaultPermissions(moduleName: string, slug: string): Perm
     { id: crypto.randomUUID(), permission_name: `Create ${label}`, action: `${base}.create`, enabled: true },
     { id: crypto.randomUUID(), permission_name: `Update ${label}`, action: `${base}.update`, enabled: true },
     { id: crypto.randomUUID(), permission_name: `Delete ${label}`, action: `${base}.delete`, enabled: true },
-    { id: crypto.randomUUID(), permission_name: `Export ${label}`, action: `${base}.export`, enabled: false },
+    { id: crypto.randomUUID(), permission_name: `Export ${label}`, action: `${base}.export`, enabled: true },
   ];
 }
 
