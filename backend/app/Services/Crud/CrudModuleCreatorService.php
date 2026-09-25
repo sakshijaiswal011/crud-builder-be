@@ -7,6 +7,7 @@ use App\Models\CrudModule;
 use App\Models\CrudModulePermission;
 use App\Services\AuditLogService;
 use Illuminate\Support\Facades\DB;
+use \Illuminate\Support\Facades\Artisan;
 
 class CrudModuleCreatorService
 {
@@ -39,6 +40,8 @@ class CrudModuleCreatorService
         });
 
         $generated = $this->generator->generate($module);
+
+        Artisan::call('migrate', ['--force' => true]);
 
         $module = $module->fresh()->load([
             'fields',

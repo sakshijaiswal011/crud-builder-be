@@ -75,6 +75,24 @@ export default function Sidebar() {
           <p className="text-xs text-slate-400">Administrator</p>
         </div>
       </div>
+      <nav className="p-3">
+        <p className="mb-2 px-3 text-[11px] font-semibold uppercase tracking-wider text-slate-500">
+          Main
+        </p>
+        <Link
+          href="/admin"
+          className={`flex items-center gap-2 rounded-md px-3 py-2 text-sm font-medium transition-colors ${
+            pathname === "/admin"
+              ? "bg-indigo-600 text-white"
+              : "text-slate-300 hover:bg-white/10 hover:text-white"
+          }`}
+        >
+          <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded bg-white/10 text-[10px] uppercase text-slate-300" aria-hidden>
+            D
+          </span>
+          Dashboard
+        </Link>
+      </nav>
 
       <nav className="flex-1 overflow-y-auto p-3">
         <p className="mb-2 px-3 text-[11px] font-semibold uppercase tracking-wider text-slate-500">
@@ -82,12 +100,15 @@ export default function Sidebar() {
         </p>
         <Link
           href="/admin/crud-builder"
-          className={`mb-4 block rounded-md px-3 py-2 text-sm font-medium transition-colors ${
+          className={`mb-4 flex items-center gap-2 rounded-md px-3 py-2 text-sm font-medium transition-colors ${
             isCrudBuilder
               ? "bg-indigo-600 text-white"
               : "text-slate-300 hover:bg-white/10 hover:text-white"
           }`}
         >
+          <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded bg-white/10 text-[10px] uppercase text-slate-300" aria-hidden>
+            C
+          </span>
           CRUD Builder
         </Link>
 

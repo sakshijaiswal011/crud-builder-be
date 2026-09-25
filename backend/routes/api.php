@@ -14,6 +14,7 @@ Route::prefix('crud-modules')->group(function () {
     Route::post('/create', [CrudModuleController::class, 'store']);
     Route::get('/slug/{slug}', [CrudModuleController::class, 'showBySlug']);
     Route::get('/{module}', [CrudModuleController::class, 'show']);
+    Route::delete('/{module}', [CrudModuleController::class, 'destroy']);
 });
 
 foreach (glob(__DIR__.'/modules/*.php') ?: [] as $moduleRouteFile) {

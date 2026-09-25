@@ -8,6 +8,7 @@ use App\Http\Requests\CrudModule\CreateCrudModuleRequest;
 use App\Models\CrudModule;
 use App\Services\Crud\CrudModuleCreatorService;
 use Illuminate\Http\JsonResponse;
+use \App\Services\Crud\CrudModuleDeleterService;
 use Throwable;
 
 class CrudModuleController extends Controller
@@ -111,5 +112,43 @@ class CrudModuleController extends Controller
             ),
             APIResponseHelper::SUCCESS
         );
+    }
+
+    public function destroy(int $module, CrudModuleDeleterService $deleter): JsonResponse
+    {
+        try {
+            $crudModule = CrudModule::find($module);
+            
+            if (! $crudModule) {
+                return response()->json(
+                    APIResponseHelper::error(APIResponseHelper::NOT_FOUND, 'Module not found.'),
+                    APIResponseHelper::NOT_FOUND
+                );
+            }
+
+            $deleter->delete($crudModule);
+
+            return response()->json(
+                APIResponseHelper::success(
+                    APIResponseHelper::SUCCESS,
+                    'Module and related files deleted successfully.'
+                ),
+                APIResponseHelper::SUCCESS
+            );
+        } catch (\InvalidArgumentException $e) {
+            return response()->json(
+                APIResponseHelper::error(APIResponseHelper::VALIDATION_ERROR, $e->getMessage()),
+                APIResponseHelper::VALIDATION_ERROR
+            );
+        } catch (Throwable $e) {
+            return response()->json(
+                APIResponseHelper::error(
+                    APIResponseHelper::SOMETHING_WENT_WRONG,
+                    'Failed to delete module.',
+                    ['exception' => $e->getMessage()]
+                ),
+                APIResponseHelper::SOMETHING_WENT_WRONG
+            );
+        }
     }
 }

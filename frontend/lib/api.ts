@@ -122,3 +122,12 @@ export function createCrudModule(payload: Record<string, unknown>) {
     }
   );
 }
+
+export function deleteCrudModule(id: number) {
+  return builderRequest<{ success: boolean; message: string }>(
+    `/crud-modules/${id}`,
+    {
+      method: "DELETE",
+    }
+  );
+}
