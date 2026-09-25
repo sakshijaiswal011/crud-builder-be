@@ -8,6 +8,10 @@ use Illuminate\Database\Eloquent\Collection;
 
 class CountryService
 {
+    public function __construct(
+        protected AuditLogService $auditLogService
+    ) {}
+
     public function list(array $filters = []): LengthAwarePaginator|Collection
     {
         $query = Country::query();
@@ -37,18 +41,34 @@ class CountryService
 
     public function create(array $data): Country
     {
-        return Country::query()->create($data);
+        $record = Country::query()->create($data);
+
+        $this->auditLogService->logRecordCreatedIfEnabled($record);
+
+        return $record;
     }
 
     public function update(Country $country, array $data): Country
     {
+        $oldValues = $country->attributesToArray();
+
         $country->update($data);
 
-        return $country->fresh();
+        $record = $country->fresh();
+
+        $this->auditLogService->logRecordUpdatedIfEnabled(
+            $record,
+            $oldValues,
+            $record->attributesToArray()
+        );
+
+        return $record;
     }
 
     public function delete(Country $country): bool
     {
+        $this->auditLogService->logRecordDeletedIfEnabled($country);
+
         return (bool) $country->delete();
     }
 }

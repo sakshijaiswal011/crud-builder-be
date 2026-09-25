@@ -5,12 +5,14 @@ namespace App\Services\Crud;
 use App\Models\CrudFormList;
 use App\Models\CrudModule;
 use App\Models\CrudModulePermission;
+use App\Services\AuditLogService;
 use Illuminate\Support\Facades\DB;
 
 class CrudModuleCreatorService
 {
     public function __construct(
-        protected CrudGenerator $generator
+        protected CrudGenerator $generator,
+        protected AuditLogService $auditLogService
     ) {}
 
     /**
@@ -37,6 +39,15 @@ class CrudModuleCreatorService
         });
 
         $generated = $this->generator->generate($module);
+
+        $module = $module->fresh()->load([
+            'fields',
+            'relationships.relatedModule',
+            'formLists.field',
+            'permissions',
+        ]);
+
+        $this->auditLogService->logModuleCreated($module);
 
         return [
             'module' => $module->fresh()->load([

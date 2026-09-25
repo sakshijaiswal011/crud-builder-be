@@ -2,11 +2,11 @@
 
 namespace App\Services;
 
-use App\Models\ProductCategory;
+use App\Models\Icecream;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Database\Eloquent\Collection;
 
-class ProductCategoryService
+class IcecreamService
 {
     public function __construct(
         protected AuditLogService $auditLogService
@@ -14,13 +14,13 @@ class ProductCategoryService
 
     public function list(array $filters = []): LengthAwarePaginator|Collection
     {
-        $query = ProductCategory::query();
+        $query = Icecream::query();
 
         if (! empty($filters['search'])) {
             $search = $filters['search'];
             $query->where(function ($q) use ($search) {
-                $q->where('category_name', 'like', "%{$search}%")
-                    ->orWhere('status', 'like', "%{$search}%");
+                $q->where('name', 'like', "%{$search}%");
+                $q->orWhere('flavor', 'like', "%{$search}%");
             });
         }
 
@@ -33,27 +33,27 @@ class ProductCategoryService
         return $query->get();
     }
 
-    public function find(int $id): ProductCategory
+    public function find(int $id): Icecream
     {
-        return ProductCategory::query()->findOrFail($id);
+        return Icecream::query()->findOrFail($id);
     }
 
-    public function create(array $data): ProductCategory
+    public function create(array $data): Icecream
     {
-        $record = ProductCategory::query()->create($data);
+        $record = Icecream::query()->create($data);
 
         $this->auditLogService->logRecordCreatedIfEnabled($record);
 
         return $record;
     }
 
-    public function update(ProductCategory $productCategory, array $data): ProductCategory
+    public function update(Icecream $icecream, array $data): Icecream
     {
-        $oldValues = $productCategory->attributesToArray();
+        $oldValues = $icecream->attributesToArray();
 
-        $productCategory->update($data);
+        $icecream->update($data);
 
-        $record = $productCategory->fresh();
+        $record = $icecream->fresh();
 
         $this->auditLogService->logRecordUpdatedIfEnabled(
             $record,
@@ -64,10 +64,10 @@ class ProductCategoryService
         return $record;
     }
 
-    public function delete(ProductCategory $productCategory): bool
+    public function delete(Icecream $icecream): bool
     {
-        $this->auditLogService->logRecordDeletedIfEnabled($productCategory);
+        $this->auditLogService->logRecordDeletedIfEnabled($icecream);
 
-        return (bool) $productCategory->delete();
+        return (bool) $icecream->delete();
     }
 }

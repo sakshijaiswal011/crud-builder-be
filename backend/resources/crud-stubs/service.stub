@@ -8,6 +8,10 @@ use Illuminate\Database\Eloquent\Collection;
 
 class {{ class }}
 {
+    public function __construct(
+        protected AuditLogService $auditLogService
+    ) {}
+
     public function list(array $filters = []): LengthAwarePaginator|Collection
     {
         $query = {{ model }}::query();
@@ -35,18 +39,34 @@ class {{ class }}
 
     public function create(array $data): {{ model }}
     {
-        return {{ model }}::query()->create($data);
+        $record = {{ model }}::query()->create($data);
+
+        $this->auditLogService->logRecordCreatedIfEnabled($record);
+
+        return $record;
     }
 
     public function update({{ model }} ${{ variable }}, array $data): {{ model }}
     {
+        $oldValues = ${{ variable }}->attributesToArray();
+
         ${{ variable }}->update($data);
 
-        return ${{ variable }}->fresh();
+        $record = ${{ variable }}->fresh();
+
+        $this->auditLogService->logRecordUpdatedIfEnabled(
+            $record,
+            $oldValues,
+            $record->attributesToArray()
+        );
+
+        return $record;
     }
 
     public function delete({{ model }} ${{ variable }}): bool
     {
+        $this->auditLogService->logRecordDeletedIfEnabled(${{ variable }});
+
         return (bool) ${{ variable }}->delete();
     }
 }
