@@ -29,10 +29,12 @@ class CrudModuleDeleterService
 
     protected function validateNoForeignKeyDependencies(CrudModule $module): void
     {
-        $isReferenced = CrudRelationship::where('related_module_id', $module->id)->exists();
+        $isReferenced = CrudRelationship::where('related_module_id', $module->id)
+            ->whereHas('module') // Ignore ghost relationships from soft-deleted modules
+            ->exists();
         
         if ($isReferenced) {
-            throw new InvalidArgumentException("Cannot delete module '{$module->name}' because it is referenced by other modules as a foreign key relation.");
+            throw new InvalidArgumentException("Cannot delete module '{$module->name}' because it is referenced by other active modules as a foreign key relation.");
         }
     }
 
