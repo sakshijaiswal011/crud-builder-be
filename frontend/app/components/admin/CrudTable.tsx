@@ -16,9 +16,19 @@ type CrudTableProps = {
   sortBy?: string | null;
   sortDir?: "asc" | "desc";
   onSort?: (fieldName: string) => void;
+  relationships?: any[];
 };
 
-function cellValue(row: CrudRecord, fieldName: string) {
+function cellValue(row: CrudRecord, fieldName: string, relationships: any[] = []) {
+  const relationship = relationships.find(r => r.foreign_key === fieldName);
+  if (relationship && relationship.relation_method_name) {
+    const relatedData = row[relationship.relation_method_name];
+    if (relatedData) {
+      const displayField = relationship.display_field || "name";
+      return String(relatedData[displayField] ?? "—");
+    }
+  }
+
   const value = row[fieldName];
   if (value === null || value === undefined || value === "") return "—";
   return String(value);
@@ -61,6 +71,7 @@ export default function CrudTable({
   sortBy = null,
   sortDir = "asc",
   onSort,
+  relationships = [],
 }: CrudTableProps) {
   const listColumns = columns.filter((column) => column.field?.field_name !== "id");
 
@@ -78,7 +89,8 @@ export default function CrudTable({
           <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
             {searchableColumns.map((column) => {
               const name = column.field!.field_name;
-              const label = column.list_label || column.form_label || name;
+              const relationship = relationships.find((r) => r.foreign_key === name);
+              const label = relationship?.display_name || column.list_label || column.form_label || name;
 
               return (
                 <div key={`search-${column.id}`}>
@@ -108,7 +120,8 @@ export default function CrudTable({
                 {listColumns.map((column) => {
                   const name = column.field?.field_name;
                   if (!name) return null;
-                  const label = column.list_label || column.form_label || name;
+                  const relationship = relationships.find((r) => r.foreign_key === name);
+                  const label = relationship?.display_name || column.list_label || column.form_label || name;
                   const sortable = column.sorting_enabled && onSort;
 
                   return (
@@ -158,7 +171,7 @@ export default function CrudTable({
                     if (!name) return null;
                     return (
                       <td key={`${id}-${name}`} className="px-4 py-3 text-slate-800">
-                        {cellValue(row, name)}
+                        {cellValue(row, name, relationships)}
                       </td>
                     );
                   })}

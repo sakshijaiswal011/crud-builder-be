@@ -68,6 +68,8 @@ class CreateCrudModuleRequest extends ApiFormRequest
             ],
             'relationships.*.foreign_key' => ['nullable', 'string', 'max:100'],
             'relationships.*.local_key' => ['nullable', 'string', 'max:100'],
+            'relationships.*.display_field' => ['nullable', 'string', 'max:100'],
+            'relationships.*.display_name' => ['nullable', 'string', 'max:100'],
 
             // Steps 4 & 5 — form + list (keyed by field_name)
             'forms_list' => ['required', 'array', 'min:1'],

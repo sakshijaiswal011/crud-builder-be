@@ -70,6 +70,7 @@ export default function ModuleEditPage() {
 
       <CrudForm
         fields={formFields}
+        relationships={module.relationships || []}
         initialValues={record}
         submitLabel="Update"
         onCancel={() => router.push(`/admin/module/${slug}`)}

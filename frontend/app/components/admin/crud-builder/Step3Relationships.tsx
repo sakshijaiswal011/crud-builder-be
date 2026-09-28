@@ -107,7 +107,7 @@ export default function Step3Relationships({
               </button>
             </div>
 
-            <div className="grid gap-3 md:grid-cols-2">
+            <div className="grid gap-3 md:grid-cols-2 lg:grid-cols-3">
               <div>
                 <label className="mb-1 block text-xs font-medium text-slate-600">
                   Relation Type
@@ -156,8 +156,43 @@ export default function Step3Relationships({
                   className={wizardCompactInputClass}
                   value={row.foreign_key}
                   onChange={(e) => updateRow(row.id, { foreign_key: e.target.value })}
-                  placeholder="Enter foreign key"
+                  placeholder="e.g. country_id"
                 />
+              </div>
+
+              <div>
+                <label className="mb-1 block text-xs font-medium text-slate-600">
+                  Display Field (Value)
+                </label>
+                <select
+                  className={wizardCompactInputClass}
+                  value={row.display_field || ""}
+                  onChange={(e) => updateRow(row.id, { display_field: e.target.value })}
+                  disabled={!row.related_module_id}
+                >
+                  <option value="">Select display field</option>
+                  {modules
+                    .find((m) => m.id.toString() === row.related_module_id)
+                    ?.fields?.map((f) => (
+                      <option key={f.id} value={f.field_name}>
+                        {f.field_name}
+                      </option>
+                    ))}
+                </select>
+                <p className="mt-1 text-xs text-slate-400">Value shown inside dropdown</p>
+              </div>
+
+              <div>
+                <label className="mb-1 block text-xs font-medium text-slate-600">
+                  Display Name (Label)
+                </label>
+                <input
+                  className={wizardCompactInputClass}
+                  value={row.display_name || ""}
+                  onChange={(e) => updateRow(row.id, { display_name: e.target.value })}
+                  placeholder="e.g. Country Name"
+                />
+                <p className="mt-1 text-xs text-slate-400">Label shown on the form</p>
               </div>
 
               <div>

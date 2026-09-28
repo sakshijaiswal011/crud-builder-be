@@ -117,71 +117,80 @@ export default function AdminPage() {
               </Link>
             </div>
           ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-              {paginatedModules.map((m) => (
-                <div
-                  key={m.id}
-                  className="group relative flex flex-col justify-between bg-white border border-slate-200 rounded-xl p-5 hover:border-indigo-300 hover:shadow-md transition-all"
-                >
-                  <button
-                    onClick={() => promptDelete(m.id, m.name)}
-                    disabled={isDeleting === m.id}
-                    title="Delete Module"
-                    className="absolute top-4 right-4 h-8 w-8 flex items-center justify-center rounded-full bg-slate-100 text-slate-400 opacity-0 group-hover:opacity-100 hover:bg-rose-100 hover:text-rose-600 transition-all disabled:opacity-50"
-                  >
-                    {isDeleting === m.id ? (
-                      <span className="animate-spin text-xs">⏳</span>
-                    ) : (
-                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                      </svg>
-                    )}
-                  </button>
-
-                  <div>
-                    <div className="flex items-start justify-between mb-4 pr-8">
-                      <div className="h-10 w-10 rounded-lg bg-indigo-50 flex items-center justify-center text-indigo-600 font-bold text-lg">
-                        {(m.menu_icon || getModuleLabel(m)).charAt(0).toUpperCase()}
-                      </div>
-                      <span
-                        className={`text-[10px] font-bold uppercase tracking-wider px-2.5 py-1 rounded-full ${
-                          m.status ? "bg-emerald-50 text-emerald-600" : "bg-amber-50 text-amber-600"
-                        }`}
-                      >
-                        {m.status ? "Active" : "Inactive"}
-                      </span>
-                    </div>
-                    
-                    <h3 className="text-base font-semibold text-slate-900 mb-1 truncate">
-                      {getModuleLabel(m)}
-                    </h3>
-                    <p className="text-xs text-slate-500 font-mono mb-4 truncate">
-                      {m.table_name}
-                    </p>
-                  </div>
-
-                  {deleteError?.id === m.id && (
-                    <div className="mb-4 text-xs font-medium text-rose-600 bg-rose-50 p-2 rounded-lg border border-rose-100">
-                      {deleteError.message}
-                    </div>
-                  )}
-
-                  <div className="flex items-center gap-2 mt-auto pt-4 border-t border-slate-100">
-                    <Link
-                      href={getModuleHref(m)}
-                      className="flex-1 bg-slate-50 hover:bg-slate-100 text-slate-700 text-xs font-medium py-2 rounded-lg text-center transition-colors border border-slate-200"
-                    >
-                      View Data
-                    </Link>
-                    <Link
-                      href={`/admin/crud-builder?id=${m.id}`}
-                      className="flex-1 bg-indigo-50 hover:bg-indigo-100 text-indigo-700 text-xs font-medium py-2 rounded-lg text-center transition-colors border border-indigo-100"
-                    >
-                      Edit Schema
-                    </Link>
-                  </div>
-                </div>
-              ))}
+            <div className="overflow-x-auto">
+              <table className="w-full text-left text-sm text-slate-600">
+                <thead className="bg-slate-50 text-xs uppercase text-slate-500 border-b border-slate-200">
+                  <tr>
+                    <th className="px-6 py-4 font-semibold">Module</th>
+                    <th className="px-6 py-4 font-semibold">Table Name</th>
+                    <th className="px-6 py-4 font-semibold">Status</th>
+                    <th className="px-6 py-4 font-semibold text-right">Actions</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-slate-100">
+                  {paginatedModules.map((m) => (
+                    <tr key={m.id} className="group hover:bg-slate-50/50 transition-colors">
+                      <td className="px-6 py-4">
+                        <div className="flex items-center gap-4">
+                          <div className="h-10 w-10 rounded-lg bg-indigo-50 flex items-center justify-center text-indigo-600 font-bold text-lg shrink-0">
+                            {(m.menu_icon || getModuleLabel(m)).charAt(0).toUpperCase()}
+                          </div>
+                          <div>
+                            <div className="font-semibold text-slate-900">{getModuleLabel(m)}</div>
+                            {deleteError?.id === m.id && (
+                              <div className="text-xs font-medium text-rose-600 mt-1">
+                                {deleteError.message}
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                      </td>
+                      <td className="px-6 py-4 font-mono text-xs text-slate-500">
+                        {m.table_name}
+                      </td>
+                      <td className="px-6 py-4">
+                        <span
+                          className={`inline-flex items-center px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider ${
+                            m.status ? "bg-emerald-50 text-emerald-600" : "bg-amber-50 text-amber-600"
+                          }`}
+                        >
+                          {m.status ? "Active" : "Inactive"}
+                        </span>
+                      </td>
+                      <td className="px-6 py-4 text-right">
+                        <div className="flex items-center justify-end gap-2">
+                          <Link
+                            href={getModuleHref(m)}
+                            className="px-3 py-1.5 text-xs font-medium text-slate-600 bg-white border border-slate-200 rounded-md hover:bg-slate-50 hover:text-slate-900 transition-colors"
+                          >
+                            View Data
+                          </Link>
+                          <Link
+                            href={`/admin/crud-builder?id=${m.id}`}
+                            className="px-3 py-1.5 text-xs font-medium text-indigo-600 bg-indigo-50 border border-indigo-100 rounded-md hover:bg-indigo-100 hover:text-indigo-700 transition-colors"
+                          >
+                            Edit
+                          </Link>
+                          <button
+                            onClick={() => promptDelete(m.id, m.name)}
+                            disabled={isDeleting === m.id}
+                            title="Delete Module"
+                            className="p-1.5 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded-md transition-colors disabled:opacity-50 cursor-pointer"
+                          >
+                            {isDeleting === m.id ? (
+                              <span className="animate-spin text-xs">⏳</span>
+                            ) : (
+                              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                              </svg>
+                            )}
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
             </div>
           )}
         </div>

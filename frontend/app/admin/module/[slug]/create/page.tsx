@@ -28,6 +28,7 @@ export default function ModuleCreatePage() {
 
       <CrudForm
         fields={formFields}
+        relationships={module.relationships || []}
         submitLabel="Create"
         onCancel={() => router.push(`/admin/module/${slug}`)}
         onSubmit={async (values) => {

@@ -38,7 +38,7 @@ export default function CrudBuilderPage() {
     if (step >= 4) {
       next = {
         ...next,
-        formsList: mergeFormsListWithFields(wizard.fields, wizard.formsList),
+        formsList: mergeFormsListWithFields(wizard.fields, wizard.formsList, wizard.relationships),
       };
     }
 
@@ -63,8 +63,9 @@ export default function CrudBuilderPage() {
       setSubmitting(true);
       const payload = buildCreateModulePayload(wizard);
       await createCrudModule(payload);
-      alert("Module created successfully.");
-      router.push("/admin/crud-builder");
+      
+      const moduleSlug = wizard.module.slug;
+      router.push(`/admin/module/${moduleSlug}`);
       router.refresh();
     } catch (err) {
       alert(err instanceof Error ? err.message : "Failed to create module.");

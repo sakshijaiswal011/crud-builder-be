@@ -5,7 +5,6 @@ namespace App\Services\Crud;
 use App\Models\CrudModule;
 use App\Models\CrudRelationship;
 use App\Services\Crud\Support\CrudClassNameResolver;
-use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Schema;
 use InvalidArgumentException;

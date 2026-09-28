@@ -100,6 +100,7 @@ class CrudModuleController extends Controller
     public function index(): JsonResponse
     {
         $modules = CrudModule::query()
+            ->with(['fields'])
             ->withCount(['fields', 'relationships', 'permissions'])
             ->latest()
             ->get();

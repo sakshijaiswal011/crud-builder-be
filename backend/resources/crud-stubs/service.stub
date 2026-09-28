@@ -16,6 +16,8 @@ class {{ class }}
     {
         $query = {{ model }}::query();
 
+{{ with_block }}
+
 {{ search_block }}
 
 {{ sort_block }}

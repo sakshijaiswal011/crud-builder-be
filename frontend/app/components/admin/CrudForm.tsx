@@ -7,6 +7,7 @@ import CrudField from "./CrudField";
 
 type CrudFormProps = {
   fields: CrudFormListMeta[];
+  relationships?: any[];
   initialValues?: CrudRecord | null;
   submitLabel?: string;
   onSubmit: (values: Record<string, unknown>) => Promise<void> | void;
@@ -15,6 +16,7 @@ type CrudFormProps = {
 
 export default function CrudForm({
   fields,
+  relationships = [],
   initialValues = null,
   submitLabel = "Save",
   onSubmit,
@@ -103,10 +105,14 @@ export default function CrudForm({
       {fields.map((field) => {
         const name = field.field?.field_name;
         if (!name) return null;
+        
+        const relationship = relationships.find((rel) => rel.foreign_key === name);
+
         return (
           <CrudField
             key={field.id}
             config={field}
+            relationship={relationship}
             value={values[name] ?? ""}
             onChange={handleChange}
             disabled={saving}

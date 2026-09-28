@@ -15,7 +15,7 @@ class ResourceGenerator
 
     public function generate(CrudModule $module): string
     {
-        $module->loadMissing('fields');
+        $module->loadMissing(['fields', 'relationships.relatedModule']);
 
         $attributes = $module->fields
             ->pluck('field_name')
@@ -24,6 +24,18 @@ class ResourceGenerator
 
         if ($attributes === '') {
             $attributes = '            //';
+        }
+
+        $relations = $module->relationships
+            ->filter(fn ($rel) => $rel->relation_type === 'belongsTo')
+            ->map(function ($rel) {
+                $method = $rel->relation_method_name;
+                return "            '{$method}' => \$this->whenLoaded('{$method}'),";
+            })
+            ->implode("\n");
+
+        if ($relations !== '') {
+            $attributes .= "\n" . $relations;
         }
 
         $attributes = "            'id' => \$this->id,\n{$attributes}\n            'created_at' => \$this->created_at,\n            'updated_at' => \$this->updated_at,";

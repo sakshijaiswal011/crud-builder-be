@@ -16,7 +16,7 @@ class ServiceGenerator
 
     public function generate(CrudModule $module): string
     {
-        $module->loadMissing(['fields', 'formLists.field']);
+        $module->loadMissing(['fields', 'formLists.field', 'relationships.relatedModule']);
 
         $searchFields = $module->formLists
             ->filter(fn ($form) => $form->search_enabled && $form->field?->field_name)
@@ -40,8 +40,24 @@ class ServiceGenerator
                 'variable' => $this->names->variable($module),
                 'search_block' => $this->buildSearchBlock($searchFields),
                 'sort_block' => $this->buildSortBlock($sortableFields),
+                'with_block' => $this->buildWithBlock($module),
             ]
         );
+    }
+
+    protected function buildWithBlock(CrudModule $module): string
+    {
+        $relations = $module->relationships
+            ->filter(fn ($rel) => $rel->relation_type === 'belongsTo')
+            ->map(fn ($rel) => "'" . $rel->relation_method_name . "'")
+            ->values();
+
+        if ($relations->isEmpty()) {
+            return '';
+        }
+
+        $list = $relations->implode(', ');
+        return "        \$query->with([{$list}]);";
     }
 
     protected function buildSearchBlock(Collection $searchFields): string

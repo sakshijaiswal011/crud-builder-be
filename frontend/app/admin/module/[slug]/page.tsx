@@ -130,6 +130,7 @@ export default function ModuleListPage() {
         sortBy={sortBy}
         sortDir={sortDir}
         onSort={handleSort}
+        relationships={module.relationships || []}
       />
     </div>
   );

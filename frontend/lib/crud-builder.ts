@@ -62,6 +62,8 @@ export type RelationshipFormRow = {
   related_module_id: string;
   foreign_key: string;
   local_key: string;
+  display_field: string;
+  display_name: string;
 };
 
 export type FormInputType = "text" | "number" | "select";
@@ -152,6 +154,8 @@ export function createEmptyRelationship(): RelationshipFormRow {
     related_module_id: "",
     foreign_key: "",
     local_key: "id",
+    display_field: "",
+    display_name: "",
   };
 }
 
@@ -168,17 +172,29 @@ export function createDefaultPermissions(moduleName: string, slug: string): Perm
   ];
 }
 
-export function buildFormsListFromFields(fields: FieldFormRow[]): FormListFormRow[] {
+export function buildFormsListFromFields(
+  fields: FieldFormRow[],
+  relationships: RelationshipFormRow[] = []
+): FormListFormRow[] {
   return fields
     .filter((field) => field.field_name.trim())
     .map((field) => {
-      const label = field.field_name
+      const relationship = relationships.find(r => r.foreign_key === field.field_name);
+      
+      let label = field.field_name
         .split("_")
         .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
         .join(" ");
 
-      const inputType: FormInputType =
-        field.type === "integer" || field.type === "decimal" ? "number" : "text";
+      if (relationship && relationship.display_name) {
+        label = relationship.display_name;
+      }
+
+      const inputType: FormInputType = relationship
+        ? "select"
+        : field.type === "integer" || field.type === "decimal"
+        ? "number"
+        : "text";
 
       return {
         field_name: field.field_name,
@@ -198,14 +214,24 @@ export function buildFormsListFromFields(fields: FieldFormRow[]): FormListFormRo
 
 export function mergeFormsListWithFields(
   fields: FieldFormRow[],
-  existing: FormListFormRow[]
+  existing: FormListFormRow[],
+  relationships: RelationshipFormRow[] = []
 ): FormListFormRow[] {
   const byName = new Map(existing.map((row) => [row.field_name, row]));
-  return buildFormsListFromFields(fields).map((row) => ({
-    ...row,
-    ...byName.get(row.field_name),
-    field_name: row.field_name,
-  }));
+  return buildFormsListFromFields(fields, relationships).map((row) => {
+    const existingRow = byName.get(row.field_name);
+    const displayName = relationships.find(r => r.foreign_key === row.field_name)?.display_name;
+    const finalLabel = displayName || existingRow?.form_label || row.form_label;
+    
+    return {
+      ...row,
+      ...existingRow,
+      form_label: finalLabel,
+      list_label: displayName || existingRow?.list_label || row.list_label,
+      form_placeholder: displayName ? `Enter ${displayName.toLowerCase()}` : (existingRow?.form_placeholder || row.form_placeholder),
+      field_name: row.field_name,
+    };
+  });
 }
 
 export function createInitialWizardState(): CrudBuilderWizardState {
@@ -295,6 +321,8 @@ export function buildCreateModulePayload(state: CrudBuilderWizardState): Record<
         related_module_id: Number(rel.related_module_id),
         foreign_key: rel.foreign_key || null,
         local_key: rel.local_key || "id",
+        display_field: rel.display_field || null,
+        display_name: rel.display_name || null,
       })),
     forms_list: state.formsList.map((row) => ({
       field_name: row.field_name,

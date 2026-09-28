@@ -46,6 +46,7 @@ export type CrudModule = {
   permissions_count?: number;
   fields?: CrudFieldMeta[];
   form_lists?: CrudFormListMeta[];
+  relationships?: any[];
 };
 
 type ApiSuccess<T> = {

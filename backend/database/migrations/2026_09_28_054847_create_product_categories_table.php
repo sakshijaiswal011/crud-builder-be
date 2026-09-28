@@ -11,13 +11,15 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('product_categories', function (Blueprint $table) {
-            $table->id();
-            $table->string('category_name', 255)->unique()->comment('Category display name');
-            $table->string('status', 50)->default('active')->index();
-            $table->timestamps();
-            $table->softDeletes();
-        });
+        if (!Schema::hasTable('product_categories')) {
+            Schema::create('product_categories', function (Blueprint $table) {
+                $table->id();
+                $table->string('category_name', 255)->unique()->comment('Category display name');
+                $table->string('status', 50)->default('active')->index();
+                $table->timestamps();
+                $table->softDeletes();
+            });
+        }
     }
 
     /**

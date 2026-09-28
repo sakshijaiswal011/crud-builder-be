@@ -108,12 +108,16 @@ class CrudModuleCreatorService
     protected function createRelationships(CrudModule $module, array $payload): void
     {
         foreach ($payload['relationships'] ?? [] as $relationship) {
-            $module->relationships()->create([
+            $data = [
                 'relation_type' => $relationship['relation_type'],
                 'related_module_id' => $relationship['related_module_id'],
                 'foreign_key' => $relationship['foreign_key'] ?? null,
                 'local_key' => $relationship['local_key'] ?? null,
-            ]);
+                'display_field' => $relationship['display_field'] ?? null,
+                'display_name' => $relationship['display_name'] ?? null,
+            ];
+
+            $module->relationships()->create($data);
         }
     }
 

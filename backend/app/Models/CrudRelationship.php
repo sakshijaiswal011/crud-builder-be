@@ -12,6 +12,8 @@ class CrudRelationship extends Model
     use SoftDeletes;
 
     protected $table = 'crud_relationships';
+    
+    protected $appends = ['relation_method_name'];
 
     protected $fillable = [
         'module_id',
@@ -19,6 +21,8 @@ class CrudRelationship extends Model
         'related_module_id',
         'foreign_key',
         'local_key',
+        'display_field',
+        'display_name',
     ];
 
     public function module(): BelongsTo
