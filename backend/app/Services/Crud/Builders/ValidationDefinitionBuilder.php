@@ -56,6 +56,7 @@ class ValidationDefinitionBuilder
             $rules = [];
         }
 
+        $rules = $this->flattenRules($rules);
         $rules = array_values(array_unique(array_map('strval', $rules)));
 
         if ($form->is_required && ! in_array('required', $rules, true) && ! in_array('nullable', $rules, true)) {
@@ -81,7 +82,46 @@ class ValidationDefinitionBuilder
     protected function ruleArray(array $rules): string
     {
         return collect($rules)
-            ->map(fn ($rule) => "'{$rule}'")
+            ->map(fn ($rule) => var_export((string) $rule, true))
             ->implode(', ');
+    }
+
+    /**
+     * Expand legacy comma-separated rule strings into individual Laravel rules.
+     *
+     * @param  array<int, mixed>  $rules
+     * @return array<int, string>
+     */
+    protected function flattenRules(array $rules): array
+    {
+        $flat = [];
+
+        foreach ($rules as $rule) {
+            $rule = trim((string) $rule);
+            if ($rule === '') {
+                continue;
+            }
+
+            if (str_starts_with($rule, 'regex:')) {
+                $flat[] = $rule;
+
+                continue;
+            }
+
+            if (str_contains($rule, ',')) {
+                foreach (preg_split('/\s*,\s*/', $rule) ?: [] as $part) {
+                    $part = trim($part, " \t\n\r\0\x0B'\"");
+                    if ($part !== '') {
+                        $flat[] = $part;
+                    }
+                }
+
+                continue;
+            }
+
+            $flat[] = $rule;
+        }
+
+        return $flat;
     }
 }

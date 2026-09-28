@@ -1,5 +1,9 @@
 "use client";
 
+import {
+  FieldErrorText,
+  inputClassWithError,
+} from "@/app/components/admin/crud-builder/WizardFieldError";
 import { CrudFormListMeta } from "@/lib/api";
 
 type CrudFieldProps = {
@@ -7,6 +11,7 @@ type CrudFieldProps = {
   value: string;
   onChange: (fieldName: string, value: string) => void;
   disabled?: boolean;
+  error?: string;
 };
 
 export default function CrudField({
@@ -14,6 +19,7 @@ export default function CrudField({
   value,
   onChange,
   disabled = false,
+  error,
 }: CrudFieldProps) {
   const fieldName = config.field?.field_name;
   if (!fieldName) return null;
@@ -22,8 +28,10 @@ export default function CrudField({
   const label = config.form_label || fieldName;
   const placeholder = config.form_placeholder || "";
 
-  const commonClass =
-    "mt-1 w-full rounded-md border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 disabled:bg-slate-50";
+  const commonClass = inputClassWithError(
+    "mt-1 w-full rounded-md border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 disabled:bg-slate-50",
+    error
+  );
 
   return (
     <div className="space-y-1">
@@ -40,7 +48,7 @@ export default function CrudField({
           disabled={disabled}
           onChange={(e) => onChange(fieldName, e.target.value)}
           className={commonClass}
-          required={config.is_required}
+          aria-invalid={Boolean(error)}
         >
           <option value="">{placeholder || `Select ${label}`}</option>
           <option value="active">Active</option>
@@ -56,9 +64,10 @@ export default function CrudField({
           placeholder={placeholder}
           onChange={(e) => onChange(fieldName, e.target.value)}
           className={commonClass}
-          required={config.is_required}
+          aria-invalid={Boolean(error)}
         />
       )}
+      <FieldErrorText message={error} />
     </div>
   );
 }

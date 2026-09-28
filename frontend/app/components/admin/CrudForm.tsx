@@ -2,7 +2,7 @@
 
 import { FormEvent, useEffect, useMemo, useState } from "react";
 import { CrudFormListMeta } from "@/lib/api";
-import { CrudRecord } from "@/lib/crud-api";
+import { CrudApiError, CrudFieldErrors, CrudRecord } from "@/lib/crud-api";
 import CrudField from "./CrudField";
 
 type CrudFormProps = {
@@ -33,6 +33,7 @@ export default function CrudForm({
   const [values, setValues] = useState<Record<string, string>>(emptyValues);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [fieldErrors, setFieldErrors] = useState<CrudFieldErrors>({});
 
   useEffect(() => {
     const next = { ...emptyValues };
@@ -47,12 +48,20 @@ export default function CrudForm({
 
   function handleChange(fieldName: string, value: string) {
     setValues((prev) => ({ ...prev, [fieldName]: value }));
+    setFieldErrors((prev) => {
+      if (!prev[fieldName]) return prev;
+      const next = { ...prev };
+      delete next[fieldName];
+      return next;
+    });
+    setError(null);
   }
 
   async function handleSubmit(event: FormEvent) {
     event.preventDefault();
     setSaving(true);
     setError(null);
+    setFieldErrors({});
 
     try {
       const payload: Record<string, unknown> = {};
@@ -68,14 +77,23 @@ export default function CrudForm({
       }
       await onSubmit(payload);
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Failed to save");
+      if (err instanceof CrudApiError) {
+        setFieldErrors(err.fieldErrors);
+        setError(
+          Object.keys(err.fieldErrors).length > 0
+            ? "Please fix the errors below."
+            : err.message
+        );
+      } else {
+        setError(err instanceof Error ? err.message : "Failed to save");
+      }
     } finally {
       setSaving(false);
     }
   }
 
   return (
-    <form onSubmit={handleSubmit} className="mx-auto max-w-2xl space-y-4">
+    <form noValidate onSubmit={handleSubmit} className="mx-auto max-w-2xl space-y-4">
       {error ? (
         <div className="rounded-md border border-rose-200 bg-rose-50 px-3 py-2 text-sm text-rose-700">
           {error}
@@ -92,6 +110,7 @@ export default function CrudForm({
             value={values[name] ?? ""}
             onChange={handleChange}
             disabled={saving}
+            error={fieldErrors[name]}
           />
         );
       })}

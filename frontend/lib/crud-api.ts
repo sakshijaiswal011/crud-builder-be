@@ -16,6 +16,31 @@ type LaravelValidationError = {
   errors?: Record<string, string[]>;
 };
 
+export type CrudFieldErrors = Record<string, string>;
+
+export class CrudApiError extends Error {
+  fieldErrors: CrudFieldErrors;
+
+  constructor(message: string, fieldErrors: CrudFieldErrors = {}) {
+    super(message);
+    this.name = "CrudApiError";
+    this.fieldErrors = fieldErrors;
+  }
+}
+
+function mapValidationErrors(errors: Record<string, string[]>): CrudFieldErrors {
+  const mapped: CrudFieldErrors = {};
+
+  for (const [field, messages] of Object.entries(errors)) {
+    const first = messages?.find((msg) => msg.trim() !== "");
+    if (first) {
+      mapped[field] = first;
+    }
+  }
+
+  return mapped;
+}
+
 async function crudRequest<T>(
   path: string,
   init?: RequestInit
@@ -39,10 +64,12 @@ async function crudRequest<T>(
   if (!response.ok) {
     const validation = json as LaravelValidationError;
     if (validation.errors) {
-      const first = Object.values(validation.errors)[0]?.[0];
-      throw new Error(first || validation.message || "Validation failed");
+      const fieldErrors = mapValidationErrors(validation.errors);
+      const first =
+        Object.values(fieldErrors)[0] || validation.message || "Validation failed";
+      throw new CrudApiError(first, fieldErrors);
     }
-    throw new Error(
+    throw new CrudApiError(
       (json as { message?: string }).message || `Request failed (${response.status})`
     );
   }
