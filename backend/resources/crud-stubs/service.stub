@@ -16,14 +16,9 @@ class {{ class }}
     {
         $query = {{ model }}::query();
 
-        if (! empty($filters['search'])) {
-            $search = $filters['search'];
-            $query->where(function ($q) use ($search) {
-{{ search_conditions }}
-            });
-        }
+{{ search_block }}
 
-        $query->latest();
+{{ sort_block }}
 
         if (! empty($filters['per_page'])) {
             return $query->paginate((int) $filters['per_page']);

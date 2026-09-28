@@ -18,6 +18,7 @@ class CrudModule extends Model
         'slug',
         'table_name',
         'api_prefix',
+        'api_version',
         'menu_name',
         'menu_group',
         'menu_icon',

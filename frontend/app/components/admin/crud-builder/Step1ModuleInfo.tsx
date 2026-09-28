@@ -107,15 +107,31 @@ export default function Step1ModuleInfo({ value, onChange }: Step1ModuleInfoProp
         </div>
 
         <div>
+          <label className={labelClass} htmlFor="api_version">
+            API Version Prefix
+          </label>
+          <input
+            id="api_version"
+            className={inputClass}
+            value={value.api_version}
+            onChange={(e) => update("api_version", e.target.value)}
+            placeholder="v1"
+          />
+          <p className="mt-1 text-xs text-slate-500">
+            Routes are registered under /api/{value.api_version || "v1"}/…
+          </p>
+        </div>
+
+        <div>
           <label className={labelClass} htmlFor="api_prefix">
-            API Prefix
+            API Resource Path
           </label>
           <input
             id="api_prefix"
             className={inputClass}
             value={value.api_prefix}
             onChange={(e) => update("api_prefix", e.target.value)}
-            placeholder="Enter API prefix"
+            placeholder="Enter resource path (e.g. countries)"
           />
         </div>
 

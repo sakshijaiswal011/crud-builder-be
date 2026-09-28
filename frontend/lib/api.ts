@@ -35,6 +35,7 @@ export type CrudModule = {
   slug: string;
   table_name: string;
   api_prefix: string | null;
+  api_version: string | null;
   menu_name: string | null;
   menu_icon: string | null;
   menu_group: string | null;
@@ -101,8 +102,13 @@ export function getModuleLabel(module: Pick<CrudModule, "menu_name" | "name">) {
   return module.menu_name?.trim() || module.name;
 }
 
-export function getModuleApiPrefix(module: Pick<CrudModule, "api_prefix" | "slug">) {
-  return (module.api_prefix || module.slug).replace(/^\/+|\/+$/g, "");
+export function getModuleApiPrefix(
+  module: Pick<CrudModule, "api_prefix" | "api_version" | "slug">
+) {
+  const version = (module.api_version?.trim() || "v1").replace(/^\/+|\/+$/g, "");
+  const resource = (module.api_prefix?.trim() || module.slug).replace(/^\/+|\/+$/g, "");
+
+  return `${version}/${resource}`;
 }
 
 export function getFormFields(module: CrudModule): CrudFormListMeta[] {

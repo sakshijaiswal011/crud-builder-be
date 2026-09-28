@@ -15,6 +15,7 @@ class CreateCrudModuleRequest extends ApiFormRequest
             'slug' => ['required', 'string', 'max:100', 'alpha_dash', Rule::unique('crud_modules', 'slug')->whereNull('deleted_at')],
             'table_name' => ['required', 'string', 'max:150', 'regex:/^[a-z][a-z0-9_]*$/', Rule::unique('crud_modules', 'table_name')->whereNull('deleted_at')],
             'api_prefix' => ['nullable', 'string', 'max:150'],
+            'api_version' => ['nullable', 'string', 'max:20', 'regex:/^v[0-9]+(\.[0-9]+)*$/'],
             'menu_name' => ['nullable', 'string', 'max:100'],
             'menu_icon' => ['nullable', 'string', 'max:100'],
             'menu_group' => ['nullable', 'string', 'max:100'],

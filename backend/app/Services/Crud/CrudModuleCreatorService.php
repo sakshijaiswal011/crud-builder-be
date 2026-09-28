@@ -75,6 +75,7 @@ class CrudModuleCreatorService
             'slug' => $payload['slug'],
             'table_name' => $payload['table_name'],
             'api_prefix' => $payload['api_prefix'] ?? null,
+            'api_version' => $payload['api_version'] ?? 'v1',
             'menu_name' => $payload['menu_name'] ?? null,
             'menu_icon' => $payload['menu_icon'] ?? null,
             'menu_group' => $payload['menu_group'] ?? null,

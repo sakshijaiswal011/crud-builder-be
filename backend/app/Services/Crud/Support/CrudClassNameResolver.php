@@ -47,9 +47,22 @@ class CrudClassNameResolver
         return Str::snake(str_replace('-', '_', $module->slug));
     }
 
+    public function apiVersion(CrudModule $module): string
+    {
+        $version = trim((string) ($module->api_version ?? 'v1'));
+
+        return $version !== '' ? $version : 'v1';
+    }
+
     public function apiPrefix(CrudModule $module): string
     {
         return $module->api_prefix ?: Str::kebab(Str::plural(str_replace('-', '_', $module->slug)));
+    }
+
+    /** Full URI segment under /api (e.g. v1/countries). */
+    public function apiRoutePath(CrudModule $module): string
+    {
+        return $this->apiVersion($module).'/'.$this->apiPrefix($module);
     }
 
     public function variable(CrudModule $module): string

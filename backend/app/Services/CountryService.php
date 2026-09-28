@@ -16,16 +16,30 @@ class CountryService
     {
         $query = Country::query();
 
-        if (! empty($filters['search'])) {
-            $search = $filters['search'];
-            $query->where(function ($q) use ($search) {
-                $q->where('name', 'like', "%{$search}%");
-                $q->orWhere('short_name', 'like', "%{$search}%");
-                $q->orWhere('code', 'like', "%{$search}%");
-            });
+        $searchableFields = ['name', 'short_name', 'code'];
+
+        if (! empty($filters['search']) && is_array($filters['search'])) {
+            foreach ($filters['search'] as $field => $term) {
+                if (! is_string($field) || ! in_array($field, $searchableFields, true)) {
+                    continue;
+                }
+                $term = is_scalar($term) ? trim((string) $term) : '';
+                if ($term === '') {
+                    continue;
+                }
+                $query->where($field, 'like', '%'.$term.'%');
+            }
         }
 
-        $query->latest();
+        $sortableFields = ['name', 'short_name', 'code'];
+        $sortBy = $filters['sort_by'] ?? null;
+        $sortDir = isset($filters['sort_dir']) && strtolower((string) $filters['sort_dir']) === 'desc' ? 'desc' : 'asc';
+
+        if (is_string($sortBy) && in_array($sortBy, $sortableFields, true)) {
+            $query->orderBy($sortBy, $sortDir);
+        } else {
+            $query->latest();
+        }
 
         if (! empty($filters['per_page'])) {
             return $query->paginate((int) $filters['per_page']);

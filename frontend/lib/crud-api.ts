@@ -59,12 +59,34 @@ function resourcePath(apiPrefix: string, id?: string | number) {
   return id === undefined ? base : `${base}/${id}`;
 }
 
+export type ListRecordsParams = {
+  /** Per-field search terms; only sent for non-empty values */
+  search?: Record<string, string>;
+  sort_by?: string;
+  sort_dir?: "asc" | "desc";
+  per_page?: number;
+};
+
 export async function listRecords(
   apiPrefix: string,
-  params?: { search?: string; per_page?: number }
+  params?: ListRecordsParams
 ): Promise<CrudRecord[]> {
   const query = new URLSearchParams();
-  if (params?.search) query.set("search", params.search);
+
+  if (params?.search) {
+    Object.entries(params.search).forEach(([field, value]) => {
+      const trimmed = value.trim();
+      if (trimmed) {
+        query.append(`search[${field}]`, trimmed);
+      }
+    });
+  }
+
+  if (params?.sort_by) {
+    query.set("sort_by", params.sort_by);
+    query.set("sort_dir", params.sort_dir ?? "asc");
+  }
+
   if (params?.per_page) query.set("per_page", String(params.per_page));
 
   const qs = query.toString();

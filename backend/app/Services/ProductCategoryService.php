@@ -16,15 +16,30 @@ class ProductCategoryService
     {
         $query = ProductCategory::query();
 
-        if (! empty($filters['search'])) {
-            $search = $filters['search'];
-            $query->where(function ($q) use ($search) {
-                $q->where('category_name', 'like', "%{$search}%")
-                    ->orWhere('status', 'like', "%{$search}%");
-            });
+        $searchableFields = ['category_name'];
+
+        if (! empty($filters['search']) && is_array($filters['search'])) {
+            foreach ($filters['search'] as $field => $term) {
+                if (! is_string($field) || ! in_array($field, $searchableFields, true)) {
+                    continue;
+                }
+                $term = is_scalar($term) ? trim((string) $term) : '';
+                if ($term === '') {
+                    continue;
+                }
+                $query->where($field, 'like', '%'.$term.'%');
+            }
         }
 
-        $query->latest();
+        $sortableFields = ['category_name', 'status'];
+        $sortBy = $filters['sort_by'] ?? null;
+        $sortDir = isset($filters['sort_dir']) && strtolower((string) $filters['sort_dir']) === 'desc' ? 'desc' : 'asc';
+
+        if (is_string($sortBy) && in_array($sortBy, $sortableFields, true)) {
+            $query->orderBy($sortBy, $sortDir);
+        } else {
+            $query->latest();
+        }
 
         if (! empty($filters['per_page'])) {
             return $query->paginate((int) $filters['per_page']);

@@ -15,6 +15,7 @@ export type ModuleInfoForm = {
   slug: string;
   table_name: string;
   api_prefix: string;
+  api_version: string;
   menu_name: string;
   menu_icon: string;
   menu_icon_file_name: string;
@@ -211,6 +212,7 @@ export function createInitialWizardState(): CrudBuilderWizardState {
       slug: "",
       table_name: "",
       api_prefix: "",
+      api_version: "v1",
       menu_name: "",
       menu_icon: "",
       menu_icon_file_name: "",
@@ -262,6 +264,7 @@ export function buildCreateModulePayload(state: CrudBuilderWizardState): Record<
     slug: m.slug.trim(),
     table_name: m.table_name.trim(),
     api_prefix: m.api_prefix.trim() || null,
+    api_version: m.api_version.trim() || "v1",
     menu_name: m.menu_name.trim() || null,
     menu_icon: m.menu_icon_file_name.trim() || null,
     menu_group: m.menu_group.trim() || null,

@@ -22,6 +22,7 @@ class RouteGenerator
             $destination,
             [
                 'controller' => $this->names->controller($module),
+                'api_version' => $this->names->apiVersion($module),
                 'api_prefix' => $this->names->apiPrefix($module),
             ]
         );

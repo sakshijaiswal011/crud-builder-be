@@ -3,4 +3,6 @@
 use App\Http\Controllers\Api\{{ controller }};
 use Illuminate\Support\Facades\Route;
 
-Route::apiResource('{{ api_prefix }}', {{ controller }}::class);
+Route::prefix('{{ api_version }}')->group(function () {
+    Route::apiResource('{{ api_prefix }}', {{ controller }}::class);
+});

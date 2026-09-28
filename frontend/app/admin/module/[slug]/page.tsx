@@ -15,11 +15,12 @@ export default function ModuleListPage() {
   const [rows, setRows] = useState<CrudRecord[]>([]);
   const [rowsLoading, setRowsLoading] = useState(true);
   const [rowsError, setRowsError] = useState<string | null>(null);
-  const [search, setSearch] = useState("");
+  const [fieldSearch, setFieldSearch] = useState<Record<string, string>>({});
+  const [sortBy, setSortBy] = useState<string | null>(null);
+  const [sortDir, setSortDir] = useState<"asc" | "desc">("asc");
   const [deletingId, setDeletingId] = useState<string | number | null>(null);
 
   const basePath = useMemo(() => `/admin/module/${slug}`, [slug]);
-  const searchable = listColumns.some((column) => column.search_enabled);
 
   const loadRows = useCallback(async () => {
     if (!apiPrefix) return;
@@ -27,7 +28,9 @@ export default function ModuleListPage() {
       setRowsLoading(true);
       setRowsError(null);
       const data = await listRecords(apiPrefix, {
-        search: search.trim() || undefined,
+        search: fieldSearch,
+        sort_by: sortBy ?? undefined,
+        sort_dir: sortDir,
         per_page: 50,
       });
       setRows(Array.isArray(data) ? data : []);
@@ -37,13 +40,34 @@ export default function ModuleListPage() {
     } finally {
       setRowsLoading(false);
     }
-  }, [apiPrefix, search]);
+  }, [apiPrefix, fieldSearch, sortBy, sortDir]);
 
   useEffect(() => {
     if (!loading && module && apiPrefix) {
-      loadRows();
+      const timer = window.setTimeout(() => {
+        loadRows();
+      }, 350);
+
+      return () => window.clearTimeout(timer);
     }
   }, [loading, module, apiPrefix, loadRows]);
+
+  function handleFieldSearchChange(fieldName: string, value: string) {
+    setFieldSearch((prev) => ({ ...prev, [fieldName]: value }));
+  }
+
+  function handleSort(fieldName: string) {
+    const column = listColumns.find((c) => c.field?.field_name === fieldName);
+    if (!column?.sorting_enabled) return;
+
+    if (sortBy !== fieldName) {
+      setSortBy(fieldName);
+      setSortDir("asc");
+      return;
+    }
+
+    setSortDir((prev) => (prev === "asc" ? "desc" : "asc"));
+  }
 
   async function handleDelete(row: CrudRecord) {
     if (row.id === undefined || row.id === null) return;
@@ -84,25 +108,6 @@ export default function ModuleListPage() {
         </Link>
       </div>
 
-      {searchable ? (
-        <div className="flex max-w-md gap-2">
-          <input
-            type="search"
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            placeholder="Search…"
-            className="w-full rounded-md border border-slate-300 px-3 py-2 text-sm outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500"
-          />
-          <button
-            type="button"
-            onClick={loadRows}
-            className="rounded-md border border-slate-300 bg-white px-3 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50"
-          >
-            Search
-          </button>
-        </div>
-      ) : null}
-
       {rowsError ? (
         <div className="rounded-md border border-rose-200 bg-rose-50 px-3 py-2 text-sm text-rose-700">
           {rowsError}
@@ -120,6 +125,11 @@ export default function ModuleListPage() {
         loading={rowsLoading}
         onDelete={handleDelete}
         deletingId={deletingId}
+        fieldSearch={fieldSearch}
+        onFieldSearchChange={handleFieldSearchChange}
+        sortBy={sortBy}
+        sortDir={sortDir}
+        onSort={handleSort}
       />
     </div>
   );
