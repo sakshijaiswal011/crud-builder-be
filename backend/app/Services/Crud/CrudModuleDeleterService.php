@@ -23,8 +23,8 @@ class CrudModuleDeleterService
         
         $this->dropTable($module);
         
-        // Cascade deletes will handle fields, formLists, permissions, relationships
-        $module->delete();
+        // Hard delete handles everything via database-level cascadeOnDelete and removes unique key conflicts
+        $module->forceDelete();
     }
 
     protected function validateNoForeignKeyDependencies(CrudModule $module): void
