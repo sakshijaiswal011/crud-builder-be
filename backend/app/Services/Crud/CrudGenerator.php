@@ -56,4 +56,34 @@ class CrudGenerator
 
         return $generated;
     }
+
+    public function regenerateCode(CrudModule $module): array
+    {
+        $module->loadMissing([
+            'fields',
+            'relationships.relatedModule',
+            'formLists.field',
+            'permissions',
+        ]);
+
+        $generated = [];
+        $generated['model'] = $this->modelGenerator->generate($module);
+
+        if ($module->generate_api_controller_routes || $module->generate_api_resource) {
+            $generated['requests'] = $this->requestGenerator->generate($module);
+            $generated['service'] = $this->serviceGenerator->generate($module);
+            $generated['resource'] = $this->resourceGenerator->generate($module);
+        }
+
+        if ($module->generate_api_controller_routes) {
+            $generated['controller'] = $this->controllerGenerator->generate($module);
+            $generated['routes'] = $this->routeGenerator->generate($module);
+        }
+
+        if ($module->generate_policy) {
+            $generated['policy'] = $this->policyGenerator->generate($module);
+        }
+
+        return $generated;
+    }
 }

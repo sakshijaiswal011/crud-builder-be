@@ -13,12 +13,14 @@ type Step6PermissionsProps = {
   permissions: PermissionFormRow[];
   errors?: WizardFieldErrors;
   onChange: (permissions: PermissionFormRow[]) => void;
+  lockIdentity?: boolean;
 };
 
 export default function Step6Permissions({
   permissions,
   errors = {},
   onChange,
+  lockIdentity = false,
 }: Step6PermissionsProps) {
   function updateRow(id: string, patch: Partial<PermissionFormRow>) {
     onChange(permissions.map((row) => (row.id === id ? { ...row, ...patch } : row)));
@@ -59,6 +61,7 @@ export default function Step6Permissions({
                 onChange={(e) => updateRow(row.id, { permission_name: e.target.value })}
                 placeholder="Enter permission name"
                 aria-invalid={Boolean(nameError)}
+                disabled={lockIdentity}
               />
               <FieldErrorText message={nameError} />
             </div>
@@ -71,6 +74,7 @@ export default function Step6Permissions({
                 onChange={(e) => updateRow(row.id, { action: e.target.value })}
                 placeholder="Enter action"
                 aria-invalid={Boolean(actionError)}
+                disabled={lockIdentity}
               />
               <FieldErrorText message={actionError} />
             </div>
@@ -85,13 +89,15 @@ export default function Step6Permissions({
               Enabled
             </label>
 
-            <button
-              type="button"
-              onClick={() => removeRow(row.id)}
-              className="self-end pb-2 text-xs font-medium text-rose-600 hover:underline"
-            >
-              Remove
-            </button>
+            {lockIdentity ? null : (
+              <button
+                type="button"
+                onClick={() => removeRow(row.id)}
+                className="self-end pb-2 text-xs font-medium text-rose-600 hover:underline"
+              >
+                Remove
+              </button>
+            )}
           </div>
           );
         })}

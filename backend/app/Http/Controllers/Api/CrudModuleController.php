@@ -5,16 +5,20 @@ namespace App\Http\Controllers\Api;
 use App\Helpers\APIResponseHelper;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\CrudModule\CreateCrudModuleRequest;
+use App\Http\Requests\CrudModule\UpdateCrudModuleRequest;
 use App\Models\CrudModule;
 use App\Services\Crud\CrudModuleCreatorService;
+use App\Services\Crud\CrudModuleUpdaterService;
 use Illuminate\Http\JsonResponse;
 use \App\Services\Crud\CrudModuleDeleterService;
+use InvalidArgumentException;
 use Throwable;
 
 class CrudModuleController extends Controller
 {
     public function __construct(
-        protected CrudModuleCreatorService $creator
+        protected CrudModuleCreatorService $creator,
+        protected CrudModuleUpdaterService $updater
     ) {}
 
     /**
@@ -38,6 +42,37 @@ class CrudModuleController extends Controller
                 APIResponseHelper::error(
                     APIResponseHelper::SOMETHING_WENT_WRONG,
                     'Failed to create CRUD module.',
+                    ['exception' => $e->getMessage()]
+                ),
+                APIResponseHelper::SOMETHING_WENT_WRONG
+            );
+        }
+    }
+
+    public function updateBySlug(UpdateCrudModuleRequest $request, string $slug): JsonResponse
+    {
+        try {
+            $crudModule = CrudModule::where('slug', $slug)->firstOrFail();
+            $result = $this->updater->update($crudModule, $request->validated());
+
+            return response()->json(
+                APIResponseHelper::success(
+                    APIResponseHelper::SUCCESS,
+                    'CRUD module updated and files regenerated successfully.',
+                    $result
+                ),
+                APIResponseHelper::SUCCESS
+            );
+        } catch (InvalidArgumentException $e) {
+            return response()->json(
+                APIResponseHelper::error(APIResponseHelper::VALIDATION_ERROR, $e->getMessage()),
+                APIResponseHelper::VALIDATION_ERROR
+            );
+        } catch (Throwable $e) {
+            return response()->json(
+                APIResponseHelper::error(
+                    APIResponseHelper::SOMETHING_WENT_WRONG,
+                    'Failed to update CRUD module.',
                     ['exception' => $e->getMessage()]
                 ),
                 APIResponseHelper::SOMETHING_WENT_WRONG

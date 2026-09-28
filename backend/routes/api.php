@@ -13,6 +13,7 @@ Route::prefix('crud-modules')->group(function () {
     Route::get('/', [CrudModuleController::class, 'index']);
     Route::post('/create', [CrudModuleController::class, 'store']);
     Route::get('/slug/{slug}', [CrudModuleController::class, 'showBySlug']);
+    Route::put('/slug/{slug}', [CrudModuleController::class, 'updateBySlug']);
     Route::get('/{module}', [CrudModuleController::class, 'show']);
     Route::delete('/{module}', [CrudModuleController::class, 'destroy']);
 });

@@ -43,7 +43,12 @@ class CrudModuleCreatorService
 
         $generated = $this->generator->generate($module);
 
-        Artisan::call('migrate', ['--force' => true]);
+        if (! empty($generated['migration'])) {
+            Artisan::call('migrate', [
+                '--force' => true,
+                '--path' => 'database/migrations/'.basename($generated['migration']),
+            ]);
+        }
 
         $module = $module->fresh()->load([
             'fields',

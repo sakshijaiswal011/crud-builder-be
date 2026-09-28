@@ -166,7 +166,7 @@ export default function AdminPage() {
                             View Data
                           </Link>
                           <Link
-                            href={`/admin/crud-builder?id=${m.id}`}
+                            href={`/admin/crud-builder/edit/${encodeURIComponent(m.slug)}`}
                             className="px-3 py-1.5 text-xs font-medium text-indigo-600 bg-indigo-50 border border-indigo-100 rounded-md hover:bg-indigo-100 hover:text-indigo-700 transition-colors"
                           >
                             Edit

@@ -46,6 +46,7 @@ export type FieldType =
 
 export type FieldFormRow = {
   id: string;
+  db_id?: number;
   field_name: string;
   type: FieldType;
   length: string;
@@ -84,6 +85,7 @@ export type FormListFormRow = {
 
 export type PermissionFormRow = {
   id: string;
+  db_id?: number;
   permission_name: string;
   action: string;
   enabled: boolean;
@@ -103,6 +105,10 @@ export type CrudBuilderWizardState = {
   formsList: FormListFormRow[];
   permissions: PermissionFormRow[];
   generation: GenerationForm;
+};
+
+export type CrudBuilderEditMeta = {
+  lockedGeneration: GenerationForm;
 };
 
 export const FIELD_TYPE_OPTIONS: { value: FieldType; label: string }[] = [
@@ -338,6 +344,125 @@ export function buildCreateModulePayload(state: CrudBuilderWizardState): Record<
       width: Number(row.width) || 25,
     })),
     permissions: state.permissions.map((perm) => ({
+      permission_name: perm.permission_name,
+      action: perm.action,
+      enabled: perm.enabled,
+    })),
+  };
+}
+
+function validationRulesToJson(rules: unknown): string {
+  if (!rules) return "[]";
+  if (typeof rules === "string") return rules;
+  try {
+    return JSON.stringify(rules);
+  } catch {
+    return "[]";
+  }
+}
+
+export function mapCrudModuleToWizardState(
+  module: import("@/lib/api").CrudModule
+): { state: CrudBuilderWizardState; editMeta: CrudBuilderEditMeta } {
+  const formByFieldId = new Map(
+    (module.form_lists ?? []).map((row) => [row.field_id, row])
+  );
+
+  const fields: FieldFormRow[] = (module.fields ?? []).map((field) => ({
+    id: String(field.id),
+    db_id: field.id,
+    field_name: field.field_name,
+    type: (field.type as FieldType) || "string",
+    length: field.length ? String(field.length) : "",
+    nullable: field.nullable,
+    default_value: field.default_value ?? "",
+    is_unique: field.is_unique,
+    is_indexed: field.is_indexed,
+    comment: field.comment ?? "",
+  }));
+
+  const formsList: FormListFormRow[] = fields.map((field) => {
+    const meta = formByFieldId.get(field.db_id!);
+    return {
+      field_name: field.field_name,
+      form_input_type: (meta?.form_input_type as FormInputType) || "text",
+      form_label: meta?.form_label ?? field.field_name,
+      form_placeholder: meta?.form_placeholder ?? "",
+      is_required: meta?.is_required ?? false,
+      validation_rules_json: validationRulesToJson(meta?.validation_rules),
+      list_label: meta?.list_label ?? field.field_name,
+      search_enabled: meta?.search_enabled ?? true,
+      sorting_enabled: meta?.sorting_enabled ?? true,
+      filtering_enabled: meta?.filtering_enabled ?? false,
+      width: String(meta?.width ?? 25),
+    };
+  });
+
+  const generation: GenerationForm = {
+    generate_api_controller_routes: Boolean(module.generate_api_controller_routes),
+    generate_api_resource: Boolean(module.generate_api_resource),
+    generate_policy: Boolean(module.generate_policy),
+    generate_frontend_views: Boolean(module.generate_frontend_views),
+  };
+
+  return {
+    state: {
+      module: {
+        name: module.name,
+        slug: module.slug,
+        table_name: module.table_name,
+        api_prefix: module.api_prefix ?? module.slug,
+        api_version: module.api_version ?? "v1",
+        menu_name: module.menu_name ?? "",
+        menu_icon: "",
+        menu_icon_file_name: module.menu_icon ?? "",
+        menu_group: module.menu_group ?? "",
+        soft_delete: Boolean(module.soft_delete),
+        audit_log: Boolean(module.audit_log),
+        status: (module.status as ModuleStatus) || "draft",
+      },
+      fields,
+      relationships: (module.relationships ?? []).map((rel) => ({
+        id: String(rel.id),
+        relation_type: rel.relation_type as RelationType,
+        related_module_id: String(rel.related_module_id),
+        foreign_key: rel.foreign_key ?? "",
+        local_key: rel.local_key ?? "id",
+        display_field: rel.display_field ?? "",
+        display_name: rel.display_name ?? "",
+      })),
+      formsList,
+      permissions: (module.permissions ?? []).map((perm) => ({
+        id: String(perm.id),
+        db_id: perm.id,
+        permission_name: perm.permission_name,
+        action: perm.action,
+        enabled: perm.enabled,
+      })),
+      generation,
+    },
+    editMeta: { lockedGeneration: { ...generation } },
+  };
+}
+
+export function buildUpdateModulePayload(state: CrudBuilderWizardState): Record<string, unknown> {
+  const base = buildCreateModulePayload(state);
+
+  return {
+    ...base,
+    fields: state.fields.map((field) => ({
+      ...(field.db_id ? { id: field.db_id } : {}),
+      field_name: field.field_name,
+      type: field.type,
+      length: field.length ? Number(field.length) : null,
+      nullable: field.nullable,
+      default_value: field.default_value || null,
+      is_unique: field.is_unique,
+      is_indexed: field.is_indexed,
+      comment: field.comment || null,
+    })),
+    permissions: state.permissions.map((perm) => ({
+      id: perm.db_id,
       permission_name: perm.permission_name,
       action: perm.action,
       enabled: perm.enabled,

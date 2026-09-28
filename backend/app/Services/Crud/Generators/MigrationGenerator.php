@@ -16,14 +16,14 @@ class MigrationGenerator
 
     public function generate(CrudModule $module): string
     {
-        foreach (File::glob(database_path('migrations/*_create_'.$module->table_name.'_table.php')) as $existing) {
-            File::delete($existing);
-        }
+        $existing = File::glob(database_path('migrations/*_create_'.$module->table_name.'_table.php'));
+        $destination = $existing !== []
+            ? $existing[0]
+            : database_path(
+                'migrations/'.now()->format('Y_m_d_His').'_create_'.$module->table_name.'_table.php'
+            );
 
         $definition = $this->builder->build($module);
-        $destination = database_path(
-            'migrations/'.now()->format('Y_m_d_His').'_create_'.$module->table_name.'_table.php'
-        );
 
         return $this->stubs->renderFile(
             $this->stubs->stubPath('migration.stub'),

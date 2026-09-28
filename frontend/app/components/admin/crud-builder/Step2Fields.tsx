@@ -97,6 +97,7 @@ export default function Step2Fields({ fields, errors = {}, onChange }: Step2Fiel
                   }
                   placeholder="Enter field name"
                   aria-invalid={Boolean(fieldNameError)}
+                  disabled={Boolean(field.db_id)}
                 />
                 <FieldErrorText message={fieldNameError} />
               </div>

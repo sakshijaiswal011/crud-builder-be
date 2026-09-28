@@ -5,10 +5,12 @@ import { GenerationForm } from "@/lib/crud-builder";
 type Step7GenerationProps = {
   value: GenerationForm;
   onChange: (value: GenerationForm) => void;
+  locked?: GenerationForm;
 };
 
-export default function Step7Generation({ value, onChange }: Step7GenerationProps) {
+export default function Step7Generation({ value, onChange, locked }: Step7GenerationProps) {
   function toggle(key: keyof GenerationForm) {
+    if (locked?.[key]) return;
     onChange({ ...value, [key]: !value[key] });
   }
 
@@ -42,28 +44,35 @@ export default function Step7Generation({ value, onChange }: Step7GenerationProp
           API configure and API endpoints / frontend code generation
         </h3>
         <p className="text-sm text-slate-500">
-          Choose what should be generated when you create this module.
+          Choose what should be generated when you save this module.
         </p>
       </div>
 
       <div className="space-y-3">
-        {options.map((option) => (
-          <label
-            key={option.key}
-            className="flex cursor-pointer items-start gap-3 rounded-lg border border-slate-200 bg-slate-50/60 p-4 hover:bg-slate-50"
-          >
-            <input
-              type="checkbox"
-              checked={value[option.key]}
-              onChange={() => toggle(option.key)}
-              className="mt-0.5 h-4 w-4 rounded border-slate-300 text-emerald-600 focus:ring-emerald-500"
-            />
-            <span>
-              <span className="block text-sm font-medium text-slate-800">{option.label}</span>
-              <span className="mt-0.5 block text-xs text-slate-500">{option.description}</span>
-            </span>
-          </label>
-        ))}
+        {options.map((option) => {
+          const isLocked = Boolean(locked?.[option.key]);
+
+          return (
+            <label
+              key={option.key}
+              className={`flex items-start gap-3 rounded-lg border border-slate-200 bg-slate-50/60 p-4 ${
+                isLocked ? "cursor-not-allowed opacity-70" : "cursor-pointer hover:bg-slate-50"
+              }`}
+            >
+              <input
+                type="checkbox"
+                checked={value[option.key]}
+                onChange={() => toggle(option.key)}
+                disabled={isLocked}
+                className="mt-0.5 h-4 w-4 rounded border-slate-300 text-emerald-600 focus:ring-emerald-500 disabled:opacity-60"
+              />
+              <span>
+                <span className="block text-sm font-medium text-slate-800">{option.label}</span>
+                <span className="mt-0.5 block text-xs text-slate-500">{option.description}</span>
+              </span>
+            </label>
+          );
+        })}
       </div>
     </div>
   );

@@ -29,6 +29,23 @@ export type CrudFormListMeta = {
   field?: CrudFieldMeta | null;
 };
 
+export type CrudRelationshipMeta = {
+  id: number;
+  relation_type: string;
+  related_module_id: number;
+  foreign_key: string | null;
+  local_key: string | null;
+  display_field?: string | null;
+  display_name?: string | null;
+};
+
+export type CrudPermissionMeta = {
+  id: number;
+  permission_name: string;
+  action: string;
+  enabled: boolean;
+};
+
 export type CrudModule = {
   id: number;
   name: string;
@@ -41,12 +58,18 @@ export type CrudModule = {
   menu_group: string | null;
   status: string;
   soft_delete: boolean;
+  audit_log?: boolean;
+  generate_api_controller_routes?: boolean;
+  generate_api_resource?: boolean;
+  generate_policy?: boolean;
+  generate_frontend_views?: boolean;
   fields_count?: number;
   relationships_count?: number;
   permissions_count?: number;
   fields?: CrudFieldMeta[];
   form_lists?: CrudFormListMeta[];
-  relationships?: any[];
+  relationships?: CrudRelationshipMeta[];
+  permissions?: CrudPermissionMeta[];
 };
 
 type ApiSuccess<T> = {
@@ -118,6 +141,13 @@ export function getFormFields(module: CrudModule): CrudFormListMeta[] {
 
 export function getListColumns(module: CrudModule): CrudFormListMeta[] {
   return getFormFields(module).filter((item) => Boolean(item.list_label));
+}
+
+export function updateCrudModuleBySlug(slug: string, payload: Record<string, unknown>) {
+  return builderRequest<{ module: CrudModule; generated: Record<string, unknown> }>(
+    `/crud-modules/slug/${encodeURIComponent(slug)}`,
+    { method: "PUT", body: JSON.stringify(payload) }
+  );
 }
 
 export function createCrudModule(payload: Record<string, unknown>) {

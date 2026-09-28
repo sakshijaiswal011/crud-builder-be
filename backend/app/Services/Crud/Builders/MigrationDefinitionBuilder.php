@@ -31,7 +31,7 @@ class MigrationDefinitionBuilder
         ];
     }
 
-    protected function buildColumn(CrudField $field): string
+    public function buildColumn(CrudField $field): string
     {
         $name = $field->field_name;
         $type = strtolower((string) $field->type);

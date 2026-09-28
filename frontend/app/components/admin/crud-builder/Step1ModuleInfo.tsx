@@ -17,11 +17,17 @@ type Step1ModuleInfoProps = {
   value: ModuleInfoForm;
   errors?: WizardFieldErrors;
   onChange: (next: ModuleInfoForm) => void;
+  lockIdentity?: boolean;
 };
 
 const labelClass = "block text-sm font-medium text-slate-700";
 
-export default function Step1ModuleInfo({ value, errors = {}, onChange }: Step1ModuleInfoProps) {
+export default function Step1ModuleInfo({
+  value,
+  errors = {},
+  onChange,
+  lockIdentity = false,
+}: Step1ModuleInfoProps) {
   function update<K extends keyof ModuleInfoForm>(key: K, next: ModuleInfoForm[K]) {
     onChange({ ...value, [key]: next });
   }
@@ -94,6 +100,7 @@ export default function Step1ModuleInfo({ value, errors = {}, onChange }: Step1M
             onChange={(e) => update("slug", slugify(e.target.value))}
             placeholder="Enter slug"
             aria-invalid={Boolean(errors.slug)}
+            disabled={lockIdentity}
           />
           <FieldErrorText message={errors.slug} />
         </div>
@@ -109,6 +116,7 @@ export default function Step1ModuleInfo({ value, errors = {}, onChange }: Step1M
             onChange={(e) => update("table_name", toTableName(e.target.value))}
             placeholder="Enter table name"
             aria-invalid={Boolean(errors.table_name)}
+            disabled={lockIdentity}
           />
           <FieldErrorText message={errors.table_name} />
         </div>
