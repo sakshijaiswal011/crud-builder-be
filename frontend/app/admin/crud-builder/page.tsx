@@ -17,8 +17,12 @@ import {
   createInitialWizardState,
   CrudBuilderWizardState,
   mergeFormsListWithFields,
-  parseValidationRulesJson,
 } from "@/lib/crud-builder";
+import {
+  hasWizardFieldErrors,
+  validateWizardStep,
+  WizardFieldErrors,
+} from "@/lib/crud-builder-validation";
 
 export default function CrudBuilderPage() {
   const router = useRouter();
@@ -26,83 +30,7 @@ export default function CrudBuilderPage() {
   const [maxReachableStep, setMaxReachableStep] = useState(1);
   const [wizard, setWizard] = useState<CrudBuilderWizardState>(createInitialWizardState);
   const [submitting, setSubmitting] = useState(false);
-
-  function validateStep1(): string | null {
-    const m = wizard.module;
-    if (!m.name.trim()) return "Name is required.";
-    if (!m.slug.trim()) return "Slug is required.";
-    if (!m.table_name.trim()) return "Table Name is required.";
-    return null;
-  }
-
-  function validateStep2(): string | null {
-    if (!wizard.fields.length) return "Add at least one field.";
-
-    for (const [index, field] of wizard.fields.entries()) {
-      if (!field.field_name.trim()) {
-        return `Field #${index + 1}: Field Name is required.`;
-      }
-      if (!/^[a-z][a-z0-9_]*$/.test(field.field_name)) {
-        return `Field #${index + 1}: Field Name must start with a letter and use snake_case.`;
-      }
-    }
-
-    const names = wizard.fields.map((field) => field.field_name);
-    if (new Set(names).size !== names.length) {
-      return "Field names must be unique.";
-    }
-
-    return null;
-  }
-
-  function validateStep3(): string | null {
-    for (const [index, rel] of wizard.relationships.entries()) {
-      if (!rel.related_module_id) {
-        return `Relation #${index + 1}: Related module is required.`;
-      }
-    }
-    return null;
-  }
-
-  function validateStep4(): string | null {
-    if (!wizard.formsList.length) return "No form fields to configure.";
-
-    for (const row of wizard.formsList) {
-      if (!row.form_label.trim()) {
-        return `Field [${row.field_name}]: Label is required.`;
-      }
-      try {
-        parseValidationRulesJson(row.validation_rules_json);
-      } catch {
-        return `Field [${row.field_name}]: Validation rules must be valid JSON.`;
-      }
-    }
-    return null;
-  }
-
-  function validateStep5(): string | null {
-    for (const row of wizard.formsList) {
-      if (!row.list_label.trim()) {
-        return `Field [${row.field_name}]: List label is required.`;
-      }
-      const width = Number(row.width);
-      if (!width || width < 1 || width > 100) {
-        return `Field [${row.field_name}]: Width must be between 1 and 100.`;
-      }
-    }
-    return null;
-  }
-
-  function validateStep6(): string | null {
-    if (!wizard.permissions.length) return "Add at least one permission.";
-
-    for (const [index, perm] of wizard.permissions.entries()) {
-      if (!perm.permission_name.trim() || !perm.action.trim()) {
-        return `Permission #${index + 1}: Name and action are required.`;
-      }
-    }
-    return null;
-  }
+  const [fieldErrors, setFieldErrors] = useState<WizardFieldErrors>({});
 
   function prepareStepData(step: number): CrudBuilderWizardState {
     let next = wizard;
@@ -146,20 +74,15 @@ export default function CrudBuilderPage() {
   }
 
   function goNext() {
-    let error: string | null = null;
-    let nextWizard = wizard;
+    const errors = validateWizardStep(currentStep, wizard);
 
-    if (currentStep === 1) error = validateStep1();
-    if (currentStep === 2) error = validateStep2();
-    if (currentStep === 3) error = validateStep3();
-    if (currentStep === 4) error = validateStep4();
-    if (currentStep === 5) error = validateStep5();
-    if (currentStep === 6) error = validateStep6();
-
-    if (error) {
-      alert(error);
+    if (hasWizardFieldErrors(errors)) {
+      setFieldErrors(errors);
       return;
     }
+
+    setFieldErrors({});
+    let nextWizard = wizard;
 
     if (currentStep === 3) {
       nextWizard = {
@@ -189,6 +112,7 @@ export default function CrudBuilderPage() {
   }
 
   function goBack() {
+    setFieldErrors({});
     setCurrentStep((prev) => Math.max(prev - 1, 1));
   }
 
@@ -196,6 +120,7 @@ export default function CrudBuilderPage() {
     if (step <= maxReachableStep) {
       const prepared = prepareStepData(step);
       setWizard(prepared);
+      setFieldErrors({});
       setCurrentStep(step);
     }
   }
@@ -230,17 +155,34 @@ export default function CrudBuilderPage() {
           onSubmit={handleSubmit}
           className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm"
         >
+          {hasWizardFieldErrors(fieldErrors) ? (
+            <div
+              className="mb-5 rounded-md border border-rose-200 bg-rose-50 px-3 py-2 text-sm text-rose-700"
+              role="alert"
+            >
+              Please fix the errors highlighted below before continuing.
+            </div>
+          ) : null}
+
           {currentStep === 1 ? (
             <Step1ModuleInfo
               value={wizard.module}
-              onChange={(module) => setWizard((prev) => ({ ...prev, module }))}
+              errors={fieldErrors}
+              onChange={(module) => {
+                setFieldErrors({});
+                setWizard((prev) => ({ ...prev, module }));
+              }}
             />
           ) : null}
 
           {currentStep === 2 ? (
             <Step2Fields
               fields={wizard.fields}
-              onChange={(fields) => setWizard((prev) => ({ ...prev, fields }))}
+              errors={fieldErrors}
+              onChange={(fields) => {
+                setFieldErrors({});
+                setWizard((prev) => ({ ...prev, fields }));
+              }}
             />
           ) : null}
 
@@ -249,30 +191,44 @@ export default function CrudBuilderPage() {
               moduleName={wizard.module.name}
               currentSlug={wizard.module.slug}
               relationships={wizard.relationships}
-              onChange={(relationships) =>
-                setWizard((prev) => ({ ...prev, relationships }))
-              }
+              errors={fieldErrors}
+              onChange={(relationships) => {
+                setFieldErrors({});
+                setWizard((prev) => ({ ...prev, relationships }));
+              }}
             />
           ) : null}
 
           {currentStep === 4 ? (
             <Step4Forms
               rows={wizard.formsList}
-              onChange={(formsList) => setWizard((prev) => ({ ...prev, formsList }))}
+              errors={fieldErrors}
+              onChange={(formsList) => {
+                setFieldErrors({});
+                setWizard((prev) => ({ ...prev, formsList }));
+              }}
             />
           ) : null}
 
           {currentStep === 5 ? (
             <Step5Listing
               rows={wizard.formsList}
-              onChange={(formsList) => setWizard((prev) => ({ ...prev, formsList }))}
+              errors={fieldErrors}
+              onChange={(formsList) => {
+                setFieldErrors({});
+                setWizard((prev) => ({ ...prev, formsList }));
+              }}
             />
           ) : null}
 
           {currentStep === 6 ? (
             <Step6Permissions
               permissions={wizard.permissions}
-              onChange={(permissions) => setWizard((prev) => ({ ...prev, permissions }))}
+              errors={fieldErrors}
+              onChange={(permissions) => {
+                setFieldErrors({});
+                setWizard((prev) => ({ ...prev, permissions }));
+              }}
             />
           ) : null}
 

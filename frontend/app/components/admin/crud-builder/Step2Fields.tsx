@@ -1,21 +1,26 @@
 "use client";
 
 import {
+  FieldErrorText,
+  inputClassWithError,
+  StepRootError,
+  wizardCompactInputClass,
+} from "@/app/components/admin/crud-builder/WizardFieldError";
+import {
   createEmptyField,
   FIELD_TYPE_OPTIONS,
   FieldFormRow,
   FieldType,
 } from "@/lib/crud-builder";
+import { WizardFieldErrors } from "@/lib/crud-builder-validation";
 
 type Step2FieldsProps = {
   fields: FieldFormRow[];
+  errors?: WizardFieldErrors;
   onChange: (fields: FieldFormRow[]) => void;
 };
 
-const inputClass =
-  "w-full rounded-md border border-slate-300 bg-white px-2.5 py-2 text-sm text-slate-900 outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500";
-
-export default function Step2Fields({ fields, onChange }: Step2FieldsProps) {
+export default function Step2Fields({ fields, errors = {}, onChange }: Step2FieldsProps) {
   function updateRow(id: string, patch: Partial<FieldFormRow>) {
     onChange(fields.map((field) => (field.id === id ? { ...field, ...patch } : field)));
   }
@@ -46,8 +51,13 @@ export default function Step2Fields({ fields, onChange }: Step2FieldsProps) {
         </button>
       </div>
 
+      <StepRootError errors={errors} keyName="fields._root" />
+
       <div className="space-y-4">
-        {fields.map((field, index) => (
+        {fields.map((field, index) => {
+          const fieldNameError = errors[`fields.${field.id}.field_name`];
+
+          return (
           <div
             key={field.id}
             className="rounded-lg border border-slate-200 bg-slate-50/60 p-4"
@@ -76,7 +86,7 @@ export default function Step2Fields({ fields, onChange }: Step2FieldsProps) {
                   Field Name
                 </label>
                 <input
-                  className={inputClass}
+                  className={inputClassWithError(wizardCompactInputClass, fieldNameError)}
                   value={field.field_name}
                   onChange={(e) =>
                     updateRow(field.id, {
@@ -86,8 +96,9 @@ export default function Step2Fields({ fields, onChange }: Step2FieldsProps) {
                     })
                   }
                   placeholder="Enter field name"
-                  required
+                  aria-invalid={Boolean(fieldNameError)}
                 />
+                <FieldErrorText message={fieldNameError} />
               </div>
 
               <div>
@@ -95,7 +106,7 @@ export default function Step2Fields({ fields, onChange }: Step2FieldsProps) {
                   Type
                 </label>
                 <select
-                  className={inputClass}
+                  className={wizardCompactInputClass}
                   value={field.type}
                   onChange={(e) =>
                     updateRow(field.id, { type: e.target.value as FieldType })
@@ -114,7 +125,7 @@ export default function Step2Fields({ fields, onChange }: Step2FieldsProps) {
                   Length
                 </label>
                 <input
-                  className={inputClass}
+                  className={wizardCompactInputClass}
                   value={field.length}
                   onChange={(e) => updateRow(field.id, { length: e.target.value })}
                   placeholder="Enter length"
@@ -126,7 +137,7 @@ export default function Step2Fields({ fields, onChange }: Step2FieldsProps) {
                   Default Value
                 </label>
                 <input
-                  className={inputClass}
+                  className={wizardCompactInputClass}
                   value={field.default_value}
                   onChange={(e) =>
                     updateRow(field.id, { default_value: e.target.value })
@@ -140,7 +151,7 @@ export default function Step2Fields({ fields, onChange }: Step2FieldsProps) {
                   Comment
                 </label>
                 <input
-                  className={inputClass}
+                  className={wizardCompactInputClass}
                   value={field.comment}
                   onChange={(e) => updateRow(field.id, { comment: e.target.value })}
                   placeholder="Enter comment"
@@ -180,7 +191,8 @@ export default function Step2Fields({ fields, onChange }: Step2FieldsProps) {
               </label>
             </div>
           </div>
-        ))}
+          );
+        })}
       </div>
     </div>
   );

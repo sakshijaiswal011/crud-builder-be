@@ -7,22 +7,27 @@ import {
   RelationshipFormRow,
   RelationType,
 } from "@/lib/crud-builder";
+import {
+  FieldErrorText,
+  inputClassWithError,
+  wizardCompactInputClass,
+} from "@/app/components/admin/crud-builder/WizardFieldError";
 import { CrudModule, getCrudModules } from "@/lib/api";
+import { WizardFieldErrors } from "@/lib/crud-builder-validation";
 
 type Step3RelationshipsProps = {
   moduleName: string;
   currentSlug: string;
   relationships: RelationshipFormRow[];
+  errors?: WizardFieldErrors;
   onChange: (relationships: RelationshipFormRow[]) => void;
 };
-
-const inputClass =
-  "w-full rounded-md border border-slate-300 bg-white px-2.5 py-2 text-sm text-slate-900 outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500";
 
 export default function Step3Relationships({
   moduleName,
   currentSlug,
   relationships,
+  errors = {},
   onChange,
 }: Step3RelationshipsProps) {
   const [modules, setModules] = useState<CrudModule[]>([]);
@@ -86,7 +91,10 @@ export default function Step3Relationships({
       ) : null}
 
       <div className="space-y-4">
-        {relationships.map((row, index) => (
+        {relationships.map((row, index) => {
+          const relatedModuleError = errors[`relations.${row.id}.related_module_id`];
+
+          return (
           <div key={row.id} className="rounded-lg border border-slate-200 bg-slate-50/60 p-4">
             <div className="mb-3 flex items-center justify-between">
               <p className="text-sm font-semibold text-slate-800">Relation #{index + 1}</p>
@@ -105,7 +113,7 @@ export default function Step3Relationships({
                   Relation Type
                 </label>
                 <select
-                  className={inputClass}
+                  className={wizardCompactInputClass}
                   value={row.relation_type}
                   onChange={(e) =>
                     updateRow(row.id, { relation_type: e.target.value as RelationType })
@@ -124,10 +132,11 @@ export default function Step3Relationships({
                   Related Module
                 </label>
                 <select
-                  className={inputClass}
+                  className={inputClassWithError(wizardCompactInputClass, relatedModuleError)}
                   value={row.related_module_id}
                   onChange={(e) => updateRow(row.id, { related_module_id: e.target.value })}
                   disabled={loading}
+                  aria-invalid={Boolean(relatedModuleError)}
                 >
                   <option value="">Select module</option>
                   {modules.map((mod) => (
@@ -136,6 +145,7 @@ export default function Step3Relationships({
                     </option>
                   ))}
                 </select>
+                <FieldErrorText message={relatedModuleError} />
               </div>
 
               <div>
@@ -143,7 +153,7 @@ export default function Step3Relationships({
                   Foreign Key
                 </label>
                 <input
-                  className={inputClass}
+                  className={wizardCompactInputClass}
                   value={row.foreign_key}
                   onChange={(e) => updateRow(row.id, { foreign_key: e.target.value })}
                   placeholder="Enter foreign key"
@@ -154,12 +164,13 @@ export default function Step3Relationships({
                 <label className="mb-1 block text-xs font-medium text-slate-600">
                   Local Key
                 </label>
-                <input className={inputClass} value="id" readOnly disabled />
+                <input className={wizardCompactInputClass} value="id" readOnly disabled />
                 <p className="mt-1 text-xs text-slate-400">Fixed to selected module id</p>
               </div>
             </div>
           </div>
-        ))}
+          );
+        })}
       </div>
     </div>
   );

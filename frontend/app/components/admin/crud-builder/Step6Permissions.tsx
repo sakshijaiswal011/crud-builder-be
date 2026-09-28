@@ -1,16 +1,25 @@
 "use client";
 
+import {
+  FieldErrorText,
+  inputClassWithError,
+  StepRootError,
+  wizardCompactInputClass,
+} from "@/app/components/admin/crud-builder/WizardFieldError";
 import { PermissionFormRow } from "@/lib/crud-builder";
+import { WizardFieldErrors } from "@/lib/crud-builder-validation";
 
 type Step6PermissionsProps = {
   permissions: PermissionFormRow[];
+  errors?: WizardFieldErrors;
   onChange: (permissions: PermissionFormRow[]) => void;
 };
 
-const inputClass =
-  "w-full rounded-md border border-slate-300 bg-white px-2.5 py-2 text-sm text-slate-900 outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500";
-
-export default function Step6Permissions({ permissions, onChange }: Step6PermissionsProps) {
+export default function Step6Permissions({
+  permissions,
+  errors = {},
+  onChange,
+}: Step6PermissionsProps) {
   function updateRow(id: string, patch: Partial<PermissionFormRow>) {
     onChange(permissions.map((row) => (row.id === id ? { ...row, ...patch } : row)));
   }
@@ -28,8 +37,14 @@ export default function Step6Permissions({ permissions, onChange }: Step6Permiss
         </p>
       </div>
 
+      <StepRootError errors={errors} keyName="permissions._root" />
+
       <div className="space-y-3">
-        {permissions.map((row) => (
+        {permissions.map((row) => {
+          const nameError = errors[`permissions.${row.id}.permission_name`];
+          const actionError = errors[`permissions.${row.id}.action`];
+
+          return (
           <div
             key={row.id}
             className="grid gap-3 rounded-lg border border-slate-200 bg-slate-50/60 p-4 md:grid-cols-[1fr_1fr_auto_auto]"
@@ -39,21 +54,25 @@ export default function Step6Permissions({ permissions, onChange }: Step6Permiss
                 Permission Name
               </label>
               <input
-                className={inputClass}
+                className={inputClassWithError(wizardCompactInputClass, nameError)}
                 value={row.permission_name}
                 onChange={(e) => updateRow(row.id, { permission_name: e.target.value })}
                 placeholder="Enter permission name"
+                aria-invalid={Boolean(nameError)}
               />
+              <FieldErrorText message={nameError} />
             </div>
 
             <div>
               <label className="mb-1 block text-xs font-medium text-slate-600">Action</label>
               <input
-                className={inputClass}
+                className={inputClassWithError(wizardCompactInputClass, actionError)}
                 value={row.action}
                 onChange={(e) => updateRow(row.id, { action: e.target.value })}
                 placeholder="Enter action"
+                aria-invalid={Boolean(actionError)}
               />
+              <FieldErrorText message={actionError} />
             </div>
 
             <label className="flex items-end gap-2 pb-2 text-sm text-slate-700">
@@ -74,7 +93,8 @@ export default function Step6Permissions({ permissions, onChange }: Step6Permiss
               Remove
             </button>
           </div>
-        ))}
+          );
+        })}
       </div>
     </div>
   );

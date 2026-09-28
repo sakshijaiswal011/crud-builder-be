@@ -1,23 +1,27 @@
 "use client";
 
 import {
+  FieldErrorText,
+  inputClassWithError,
+  wizardInputClass,
+} from "@/app/components/admin/crud-builder/WizardFieldError";
+import {
   ModuleInfoForm,
   ModuleStatus,
   slugify,
   toTableName,
 } from "@/lib/crud-builder";
+import { WizardFieldErrors } from "@/lib/crud-builder-validation";
 
 type Step1ModuleInfoProps = {
   value: ModuleInfoForm;
+  errors?: WizardFieldErrors;
   onChange: (next: ModuleInfoForm) => void;
 };
 
-const inputClass =
-  "mt-1 w-full rounded-md border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500";
-
 const labelClass = "block text-sm font-medium text-slate-700";
 
-export default function Step1ModuleInfo({ value, onChange }: Step1ModuleInfoProps) {
+export default function Step1ModuleInfo({ value, errors = {}, onChange }: Step1ModuleInfoProps) {
   function update<K extends keyof ModuleInfoForm>(key: K, next: ModuleInfoForm[K]) {
     onChange({ ...value, [key]: next });
   }
@@ -70,12 +74,13 @@ export default function Step1ModuleInfo({ value, onChange }: Step1ModuleInfoProp
           </label>
           <input
             id="name"
-            className={inputClass}
+            className={inputClassWithError(wizardInputClass, errors.name)}
             value={value.name}
             onChange={(e) => handleNameChange(e.target.value)}
             placeholder="Enter name"
-            required
+            aria-invalid={Boolean(errors.name)}
           />
+          <FieldErrorText message={errors.name} />
         </div>
 
         <div>
@@ -84,12 +89,13 @@ export default function Step1ModuleInfo({ value, onChange }: Step1ModuleInfoProp
           </label>
           <input
             id="slug"
-            className={inputClass}
+            className={inputClassWithError(wizardInputClass, errors.slug)}
             value={value.slug}
             onChange={(e) => update("slug", slugify(e.target.value))}
             placeholder="Enter slug"
-            required
+            aria-invalid={Boolean(errors.slug)}
           />
+          <FieldErrorText message={errors.slug} />
         </div>
 
         <div>
@@ -98,12 +104,13 @@ export default function Step1ModuleInfo({ value, onChange }: Step1ModuleInfoProp
           </label>
           <input
             id="table_name"
-            className={inputClass}
+            className={inputClassWithError(wizardInputClass, errors.table_name)}
             value={value.table_name}
             onChange={(e) => update("table_name", toTableName(e.target.value))}
             placeholder="Enter table name"
-            required
+            aria-invalid={Boolean(errors.table_name)}
           />
+          <FieldErrorText message={errors.table_name} />
         </div>
 
         <div>
@@ -112,11 +119,13 @@ export default function Step1ModuleInfo({ value, onChange }: Step1ModuleInfoProp
           </label>
           <input
             id="api_version"
-            className={inputClass}
+            className={inputClassWithError(wizardInputClass, errors.api_version)}
             value={value.api_version}
             onChange={(e) => update("api_version", e.target.value)}
             placeholder="v1"
+            aria-invalid={Boolean(errors.api_version)}
           />
+          <FieldErrorText message={errors.api_version} />
           <p className="mt-1 text-xs text-slate-500">
             Routes are registered under /api/{value.api_version || "v1"}/…
           </p>
@@ -128,7 +137,7 @@ export default function Step1ModuleInfo({ value, onChange }: Step1ModuleInfoProp
           </label>
           <input
             id="api_prefix"
-            className={inputClass}
+            className={wizardInputClass}
             value={value.api_prefix}
             onChange={(e) => update("api_prefix", e.target.value)}
             placeholder="Enter resource path (e.g. countries)"
@@ -141,7 +150,7 @@ export default function Step1ModuleInfo({ value, onChange }: Step1ModuleInfoProp
           </label>
           <input
             id="menu_name"
-            className={inputClass}
+            className={wizardInputClass}
             value={value.menu_name}
             onChange={(e) => update("menu_name", e.target.value)}
             placeholder="Enter menu name"
@@ -154,7 +163,7 @@ export default function Step1ModuleInfo({ value, onChange }: Step1ModuleInfoProp
           </label>
           <input
             id="menu_group"
-            className={inputClass}
+            className={wizardInputClass}
             value={value.menu_group}
             onChange={(e) => update("menu_group", e.target.value)}
             placeholder="Enter menu group"
@@ -198,7 +207,7 @@ export default function Step1ModuleInfo({ value, onChange }: Step1ModuleInfoProp
           </label>
           <select
             id="status"
-            className={inputClass}
+            className={wizardInputClass}
             value={value.status}
             onChange={(e) => update("status", e.target.value as ModuleStatus)}
           >

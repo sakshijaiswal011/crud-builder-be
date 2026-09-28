@@ -1,20 +1,25 @@
 "use client";
 
 import {
+  FieldErrorText,
+  inputClassWithError,
+  StepRootError,
+  wizardCompactInputClass,
+} from "@/app/components/admin/crud-builder/WizardFieldError";
+import {
   FORM_INPUT_TYPE_OPTIONS,
   FormInputType,
   FormListFormRow,
 } from "@/lib/crud-builder";
+import { WizardFieldErrors } from "@/lib/crud-builder-validation";
 
 type Step4FormsProps = {
   rows: FormListFormRow[];
+  errors?: WizardFieldErrors;
   onChange: (rows: FormListFormRow[]) => void;
 };
 
-const inputClass =
-  "w-full rounded-md border border-slate-300 bg-white px-2.5 py-2 text-sm text-slate-900 outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500";
-
-export default function Step4Forms({ rows, onChange }: Step4FormsProps) {
+export default function Step4Forms({ rows, errors = {}, onChange }: Step4FormsProps) {
   function updateRow(fieldName: string, patch: Partial<FormListFormRow>) {
     onChange(
       rows.map((row) => (row.field_name === fieldName ? { ...row, ...patch } : row))
@@ -32,8 +37,14 @@ export default function Step4Forms({ rows, onChange }: Step4FormsProps) {
         </p>
       </div>
 
+      <StepRootError errors={errors} keyName="forms._root" />
+
       <div className="space-y-4">
-        {rows.map((row) => (
+        {rows.map((row) => {
+          const labelError = errors[`forms.${row.field_name}.form_label`];
+          const rulesError = errors[`forms.${row.field_name}.validation_rules_json`];
+
+          return (
           <div
             key={row.field_name}
             className="rounded-lg border border-slate-200 bg-slate-50/60 p-4"
@@ -51,7 +62,7 @@ export default function Step4Forms({ rows, onChange }: Step4FormsProps) {
                   Input Type
                 </label>
                 <select
-                  className={inputClass}
+                  className={wizardCompactInputClass}
                   value={row.form_input_type}
                   onChange={(e) =>
                     updateRow(row.field_name, {
@@ -70,11 +81,13 @@ export default function Step4Forms({ rows, onChange }: Step4FormsProps) {
               <div>
                 <label className="mb-1 block text-xs font-medium text-slate-600">Label</label>
                 <input
-                  className={inputClass}
+                  className={inputClassWithError(wizardCompactInputClass, labelError)}
                   value={row.form_label}
                   onChange={(e) => updateRow(row.field_name, { form_label: e.target.value })}
                   placeholder="Enter label"
+                  aria-invalid={Boolean(labelError)}
                 />
+                <FieldErrorText message={labelError} />
               </div>
 
               <div>
@@ -82,7 +95,7 @@ export default function Step4Forms({ rows, onChange }: Step4FormsProps) {
                   Placeholder
                 </label>
                 <input
-                  className={inputClass}
+                  className={wizardCompactInputClass}
                   value={row.form_placeholder}
                   onChange={(e) =>
                     updateRow(row.field_name, { form_placeholder: e.target.value })
@@ -96,13 +109,15 @@ export default function Step4Forms({ rows, onChange }: Step4FormsProps) {
                   Validation Rules (JSON)
                 </label>
                 <input
-                  className={inputClass}
+                  className={inputClassWithError(wizardCompactInputClass, rulesError)}
                   value={row.validation_rules_json}
                   onChange={(e) =>
                     updateRow(row.field_name, { validation_rules_json: e.target.value })
                   }
                   placeholder='["required","string","max:255"]'
+                  aria-invalid={Boolean(rulesError)}
                 />
+                <FieldErrorText message={rulesError} />
               </div>
             </div>
 
@@ -116,7 +131,8 @@ export default function Step4Forms({ rows, onChange }: Step4FormsProps) {
               Required
             </label>
           </div>
-        ))}
+          );
+        })}
       </div>
     </div>
   );

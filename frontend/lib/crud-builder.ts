@@ -8,6 +8,9 @@ export const CRUD_BUILDER_STEPS = [
   { id: 7, title: "Generate", description: "Output options" },
 ] as const;
 
+/** Set to true to show the Filterable checkbox on step 5 (listing). */
+export const SHOW_STEP5_FILTERABLE = false;
+
 export type ModuleStatus = "draft" | "active" | "inactive";
 
 export type ModuleInfoForm = {
