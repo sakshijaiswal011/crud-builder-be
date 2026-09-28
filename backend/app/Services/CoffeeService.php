@@ -18,7 +18,7 @@ class CoffeeService
 
         $query->with(['color']);
 
-        $searchableFields = ['name', 'desc'];
+        $searchableFields = ['name', 'desc', 'description'];
 
         if (! empty($filters['search']) && is_array($filters['search'])) {
             foreach ($filters['search'] as $field => $term) {
@@ -33,7 +33,7 @@ class CoffeeService
             }
         }
 
-        $sortableFields = ['code', 'color_id'];
+        $sortableFields = ['code', 'color_id', 'description'];
         $sortBy = $filters['sort_by'] ?? null;
         $sortDir = isset($filters['sort_dir']) && strtolower((string) $filters['sort_dir']) === 'desc' ? 'desc' : 'asc';
 

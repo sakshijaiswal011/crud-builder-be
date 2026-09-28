@@ -18,6 +18,7 @@ class UpdateCoffeeRequest extends FormRequest
             'code' => ['sometimes'],
             'desc' => ['sometimes'],
             'color_id' => ['sometimes'],
+            'description' => ['sometimes'],
         ];
     }
 }

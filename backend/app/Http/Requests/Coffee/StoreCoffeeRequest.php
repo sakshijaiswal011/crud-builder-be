@@ -18,6 +18,7 @@ class StoreCoffeeRequest extends FormRequest
             'code' => ['required'],
             'desc' => ['required'],
             'color_id' => ['required'],
+            'description' => ['required'],
         ];
     }
 }

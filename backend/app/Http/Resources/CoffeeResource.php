@@ -14,6 +14,7 @@ class CoffeeResource extends JsonResource
             'code' => $this->code,
             'color_id' => $this->color_id,
             'desc' => $this->desc,
+            'description' => $this->description,
             'name' => $this->name,
             'color' => $this->whenLoaded('color'),
             'created_at' => $this->created_at,
