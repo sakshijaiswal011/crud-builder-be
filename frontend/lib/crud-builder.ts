@@ -301,7 +301,7 @@ export function buildCreateModulePayload(state: CrudBuilderWizardState): Record<
     api_prefix: m.api_prefix.trim() || null,
     api_version: m.api_version.trim() || "v1",
     menu_name: m.menu_name.trim() || null,
-    menu_icon: m.menu_icon_file_name.trim() || null,
+    menu_icon: m.menu_icon.trim() || null,
     menu_group: m.menu_group.trim() || null,
     soft_delete: m.soft_delete,
     audit_log: m.audit_log,

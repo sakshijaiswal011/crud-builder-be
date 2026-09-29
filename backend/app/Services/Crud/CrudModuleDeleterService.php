@@ -29,7 +29,10 @@ class CrudModuleDeleterService
 
     protected function validateNoForeignKeyDependencies(CrudModule $module): void
     {
+        // Only belongsTo creates a real database foreign key constraint on the other table
+        // hasOne/hasMany don't create physical constraints, so they should not block deletion
         $isReferenced = CrudRelationship::where('related_module_id', $module->id)
+            ->where('relation_type', 'belongsTo')
             ->whereHas('module') // Ignore ghost relationships from soft-deleted modules
             ->exists();
         

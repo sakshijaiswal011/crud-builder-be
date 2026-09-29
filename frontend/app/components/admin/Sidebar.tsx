@@ -156,12 +156,20 @@ export default function Sidebar() {
                         }`}
                         title={module.slug}
                       >
-                        <span
-                          className="flex h-6 w-6 shrink-0 items-center justify-center rounded bg-white/10 text-[10px] uppercase text-slate-300"
-                          aria-hidden
-                        >
-                          {(module.menu_icon || label).slice(0, 1)}
-                        </span>
+                        {module.menu_icon && module.menu_icon.trim().startsWith('<svg') ? (
+                          <span
+                            className="flex h-6 w-6 shrink-0 items-center justify-center text-slate-300 [&>svg]:h-5 [&>svg]:w-5"
+                            dangerouslySetInnerHTML={{ __html: module.menu_icon }}
+                            aria-hidden
+                          />
+                        ) : (
+                          <span
+                            className="flex h-6 w-6 shrink-0 items-center justify-center rounded bg-white/10 text-[10px] uppercase text-slate-300"
+                            aria-hidden
+                          >
+                            {(module.menu_icon || label).slice(0, 1)}
+                          </span>
+                        )}
                         <span className="truncate">{label}</span>
                       </Link>
                     </li>

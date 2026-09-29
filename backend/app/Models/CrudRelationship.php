@@ -42,7 +42,16 @@ class CrudRelationship extends Model
             return 'related';
         }
 
-        $base = Str::camel(Str::singular($related->table_name));
+        // Use the same slug-based naming convention as the generator
+        $base = Str::camel(Str::singular(str_replace('-', '_', $related->slug)));
+
+        // If a custom foreign key is provided, use it to derive a unique method name
+        if ($this->foreign_key) {
+            $prefix = preg_replace('/_id$/', '', $this->foreign_key);
+            if ($prefix !== '') {
+                $base = Str::camel($prefix);
+            }
+        }
 
         return in_array($this->relation_type, ['hasMany', 'belongsToMany'], true)
             ? Str::plural($base)

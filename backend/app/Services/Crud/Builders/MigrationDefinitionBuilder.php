@@ -12,14 +12,19 @@ class MigrationDefinitionBuilder
      */
     public function build(CrudModule $module): array
     {
-        $module->loadMissing('fields');
+        $module->loadMissing(['fields', 'relationships.relatedModule']);
 
         $columns = $module->fields
-            ->map(fn (CrudField $field) => $this->buildColumn($field))
+            ->map(fn (CrudField $field) => $this->buildColumn($field, $module))
             ->implode("\n");
 
         if ($columns === '') {
             $columns = '            //';
+        }
+
+        $foreignKeys = $this->buildForeignKeys($module);
+        if ($foreignKeys !== '') {
+            $columns .= "\n\n" . $foreignKeys;
         }
 
         return [
@@ -31,11 +36,44 @@ class MigrationDefinitionBuilder
         ];
     }
 
-    public function buildColumn(CrudField $field): string
+    protected function buildForeignKeys(CrudModule $module): string
+    {
+        $foreignKeys = [];
+
+        foreach ($module->relationships as $relationship) {
+            if ($relationship->relation_type === 'belongsTo' && $relationship->foreign_key && $relationship->relatedModule) {
+                $foreign = $relationship->foreign_key;
+                $onTable = $relationship->relatedModule->table_name;
+                $references = $relationship->local_key ?: 'id';
+
+                $foreignKeys[] = "            \$table->foreign('{$foreign}')->references('{$references}')->on('{$onTable}')->restrictOnDelete();";
+            }
+        }
+
+        return implode("\n", $foreignKeys);
+    }
+
+    public function buildColumn(CrudField $field, ?CrudModule $module = null): string
     {
         $name = $field->field_name;
         $type = strtolower((string) $field->type);
         $line = '            $table';
+
+        // Check if this field is used as a foreign key in any belongsTo relationship
+        $isForeignKey = false;
+        if ($module) {
+            foreach ($module->relationships as $relationship) {
+                if ($relationship->relation_type === 'belongsTo' && $relationship->foreign_key === $name) {
+                    $isForeignKey = true;
+                    break;
+                }
+            }
+        }
+
+        // Force foreign keys to unsignedBigInteger to match Laravel's default bigIncrements('id')
+        if ($isForeignKey) {
+            $type = 'unsignedbiginteger';
+        }
 
         $line .= match ($type) {
             'string', 'varchar' => $field->length

@@ -48,7 +48,7 @@ class ServiceGenerator
     protected function buildWithBlock(CrudModule $module): string
     {
         $relations = $module->relationships
-            ->filter(fn ($rel) => $rel->relation_type === 'belongsTo')
+            ->filter(fn ($rel) => in_array($rel->relation_type, ['belongsTo', 'hasOne'], true))
             ->map(fn ($rel) => "'" . $rel->relation_method_name . "'")
             ->values();
 

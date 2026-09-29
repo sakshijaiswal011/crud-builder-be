@@ -17,7 +17,7 @@ class CreateCrudModuleRequest extends ApiFormRequest
             'api_prefix' => ['nullable', 'string', 'max:150'],
             'api_version' => ['nullable', 'string', 'max:20', 'regex:/^v[0-9]+(\.[0-9]+)*$/'],
             'menu_name' => ['nullable', 'string', 'max:100'],
-            'menu_icon' => ['nullable', 'string', 'max:100'],
+            'menu_icon' => ['nullable', 'string'],
             'menu_group' => ['nullable', 'string', 'max:100'],
             'soft_delete' => ['sometimes', 'boolean'],
             'audit_log' => ['sometimes', 'boolean'],

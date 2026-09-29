@@ -27,7 +27,6 @@ class ResourceGenerator
         }
 
         $relations = $module->relationships
-            ->filter(fn ($rel) => $rel->relation_type === 'belongsTo')
             ->map(function ($rel) {
                 $method = $rel->relation_method_name;
                 return "            '{$method}' => \$this->whenLoaded('{$method}'),";

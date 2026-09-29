@@ -97,6 +97,15 @@ PHP;
     {
         $base = Str::camel(Str::singular(str_replace('-', '_', $related->slug)));
 
+        // If a custom foreign key is provided, use it to derive a unique method name
+        // This prevents duplicate method names when multiple relationships point to the same module
+        if ($relationship->foreign_key) {
+            $prefix = preg_replace('/_id$/', '', $relationship->foreign_key);
+            if ($prefix !== '') {
+                $base = Str::camel($prefix);
+            }
+        }
+
         return in_array($relationship->relation_type, ['hasMany', 'belongsToMany'], true)
             ? Str::plural($base)
             : $base;
