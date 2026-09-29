@@ -15,7 +15,8 @@ class RouteGenerator
 
     public function generate(CrudModule $module): string
     {
-        $destination = base_path('routes/modules/'.$this->names->routeFile($module).'.php');
+        $routesPath = config('crud-builder.paths.routes', base_path('routes/modules'));
+        $destination = $routesPath . '/' . $this->names->routeFile($module) . '.php';
 
         $path = $this->stubs->renderFile(
             $this->stubs->stubPath('routes.stub'),

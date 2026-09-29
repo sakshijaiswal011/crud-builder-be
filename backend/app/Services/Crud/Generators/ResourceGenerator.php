@@ -41,7 +41,7 @@ class ResourceGenerator
 
         return $this->stubs->renderFile(
             $this->stubs->stubPath('resource.stub'),
-            app_path('Http/Resources/'.$this->names->resource($module).'.php'),
+            config('crud-builder.paths.resources', app_path('Http/Resources')) . '/' . $this->names->resource($module) . '.php',
             [
                 'class' => $this->names->resource($module),
                 'attributes' => $attributes,

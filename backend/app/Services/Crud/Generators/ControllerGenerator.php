@@ -17,9 +17,11 @@ class ControllerGenerator
     {
         $model = $this->names->model($module);
 
+        $destination = config('crud-builder.paths.controllers', app_path('Http/Controllers/Api')) . '/' . $this->names->controller($module) . '.php';
+
         return $this->stubs->renderFile(
             $this->stubs->stubPath('controller.stub'),
-            app_path('Http/Controllers/Api/'.$this->names->controller($module).'.php'),
+            $destination,
             [
                 'class' => $this->names->controller($module),
                 'model' => $model,

@@ -67,9 +67,11 @@ class ModuleSchemaAlterService
             $down[] = '            //';
         }
 
+        $migrationsPath = config('crud-builder.paths.migrations', database_path('migrations'));
+        
         return $this->stubs->renderFile(
             $this->stubs->stubPath('alter-migration.stub'),
-            database_path('migrations/'.now()->format('Y_m_d_His').'_alter_'.$module->table_name.'_table.php'),
+            $migrationsPath . '/' . now()->format('Y_m_d_His') . '_alter_' . $module->table_name . '_table.php',
             [
                 'table' => $module->table_name,
                 'up_lines' => implode("\n", $up),

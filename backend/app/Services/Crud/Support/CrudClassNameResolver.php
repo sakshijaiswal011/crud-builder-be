@@ -72,7 +72,7 @@ class CrudClassNameResolver
 
     public function modelNamespace(): string
     {
-        return 'App\\Models';
+        return config('crud-builder.namespaces.models', 'App\\Models');
     }
 
     public function modelFqcn(CrudModule $module): string

@@ -132,9 +132,16 @@ export default function AdminPage() {
                     <tr key={m.id} className="group hover:bg-slate-50/50 transition-colors">
                       <td className="px-6 py-4">
                         <div className="flex items-center gap-4">
-                          <div className="h-10 w-10 rounded-lg bg-indigo-50 flex items-center justify-center text-indigo-600 font-bold text-lg shrink-0">
-                            {(m.menu_icon || getModuleLabel(m)).charAt(0).toUpperCase()}
-                          </div>
+                          {m.menu_icon && m.menu_icon.trim().startsWith('<svg') ? (
+                            <div 
+                              className="h-10 w-10 rounded-lg bg-indigo-50 flex items-center justify-center text-indigo-600 shrink-0 [&>svg]:h-5 [&>svg]:w-5 [&>svg]:fill-current"
+                              dangerouslySetInnerHTML={{ __html: m.menu_icon }}
+                            />
+                          ) : (
+                            <div className="h-10 w-10 rounded-lg bg-indigo-50 flex items-center justify-center text-indigo-600 font-bold text-lg shrink-0">
+                              {(m.menu_icon || getModuleLabel(m)).charAt(0).toUpperCase()}
+                            </div>
+                          )}
                           <div>
                             <div className="font-semibold text-slate-900">{getModuleLabel(m)}</div>
                             {deleteError?.id === m.id && (

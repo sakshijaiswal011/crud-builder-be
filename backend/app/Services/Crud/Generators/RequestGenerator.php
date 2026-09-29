@@ -22,7 +22,8 @@ class RequestGenerator
     {
         $rules = $this->builder->build($module);
         $model = $this->names->model($module);
-        $dir = app_path('Http/Requests/'.$model);
+        $baseDir = config('crud-builder.paths.requests', app_path('Http/Requests'));
+        $dir = $baseDir . '/' . $model;
 
         $storeClass = $this->names->storeRequest($module);
         $updateClass = $this->names->updateRequest($module);

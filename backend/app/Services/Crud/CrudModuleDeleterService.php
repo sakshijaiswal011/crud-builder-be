@@ -57,19 +57,28 @@ class CrudModuleDeleterService
         $policy = $this->resolver->policy($module);
         $routeFile = $this->resolver->routeFile($module);
         
+        $modelsPath = config('crud-builder.paths.models', app_path('Models'));
+        $controllersPath = config('crud-builder.paths.controllers', app_path('Http/Controllers/Api'));
+        $servicesPath = config('crud-builder.paths.services', app_path('Services'));
+        $resourcesPath = config('crud-builder.paths.resources', app_path('Http/Resources'));
+        $requestsPath = config('crud-builder.paths.requests', app_path('Http/Requests'));
+        $policiesPath = config('crud-builder.paths.policies', app_path('Policies'));
+        $routesPath = config('crud-builder.paths.routes', base_path('routes/modules'));
+        $migrationsPath = config('crud-builder.paths.migrations', database_path('migrations'));
+        
         $filesToDelete = [
-            app_path("Models/{$model}.php"),
-            app_path("Http/Controllers/Api/{$controller}.php"),
-            app_path("Services/{$service}.php"),
-            app_path("Http/Resources/{$resource}.php"),
-            app_path("Http/Requests/{$model}/{$storeRequest}.php"),
-            app_path("Http/Requests/{$model}/{$updateRequest}.php"),
-            app_path("Policies/{$policy}.php"),
-            base_path("routes/modules/{$routeFile}.php"),
+            "{$modelsPath}/{$model}.php",
+            "{$controllersPath}/{$controller}.php",
+            "{$servicesPath}/{$service}.php",
+            "{$resourcesPath}/{$resource}.php",
+            "{$requestsPath}/{$model}/{$storeRequest}.php",
+            "{$requestsPath}/{$model}/{$updateRequest}.php",
+            "{$policiesPath}/{$policy}.php",
+            "{$routesPath}/{$routeFile}.php",
         ];
 
         // Find and delete the migration file
-        $migrationFiles = glob(database_path("migrations/*_create_{$module->table_name}_table.php"));
+        $migrationFiles = glob("{$migrationsPath}/*_create_{$module->table_name}_table.php");
         if ($migrationFiles) {
             $filesToDelete = array_merge($filesToDelete, $migrationFiles);
         }
@@ -81,7 +90,7 @@ class CrudModuleDeleterService
         }
         
         // Clean up the request directory if empty
-        $requestDir = app_path("Http/Requests/{$model}");
+        $requestDir = "{$requestsPath}/{$model}";
         if (File::isDirectory($requestDir) && count(File::files($requestDir)) === 0) {
             File::deleteDirectory($requestDir);
         }
