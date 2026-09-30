@@ -17,12 +17,13 @@ class PolicyGenerator
     {
         $model = $this->names->model($module);
 
-        $destination = config('crud-builder.paths.policies', app_path('Policies')) . '/' . $this->names->policy($module) . '.php';
+        $destination = $this->names->policyPath($module) . '/' . $this->names->policy($module) . '.php';
 
         return $this->stubs->renderFile(
             $this->stubs->stubPath('policy.stub'),
             $destination,
             [
+                'namespace' => $this->names->policyNamespace($module),
                 'class' => $this->names->policy($module),
                 'model' => $model,
                 'model_fqcn' => $this->names->modelFqcn($module),

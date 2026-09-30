@@ -18,8 +18,7 @@ class ModelGenerator
     public function generate(CrudModule $module): string
     {
         $definition = $this->builder->build($module);
-        $modelsPath = config('crud-builder.paths.models', app_path('Models'));
-        $destination = $modelsPath . '/' . $this->names->model($module) . '.php';
+        $destination = $this->names->modelPath($module) . '/' . $this->names->model($module) . '.php';
 
         return $this->stubs->renderFile(
             $this->stubs->stubPath('model.stub'),

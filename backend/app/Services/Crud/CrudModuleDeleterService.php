@@ -57,14 +57,14 @@ class CrudModuleDeleterService
         $policy = $this->resolver->policy($module);
         $routeFile = $this->resolver->routeFile($module);
         
-        $modelsPath = config('crud-builder.paths.models', app_path('Models'));
-        $controllersPath = config('crud-builder.paths.controllers', app_path('Http/Controllers/Api'));
-        $servicesPath = config('crud-builder.paths.services', app_path('Services'));
-        $resourcesPath = config('crud-builder.paths.resources', app_path('Http/Resources'));
-        $requestsPath = config('crud-builder.paths.requests', app_path('Http/Requests'));
-        $policiesPath = config('crud-builder.paths.policies', app_path('Policies'));
-        $routesPath = config('crud-builder.paths.routes', base_path('routes/modules'));
-        $migrationsPath = config('crud-builder.paths.migrations', database_path('migrations'));
+        $modelsPath = $this->resolver->modelPath($module);
+        $controllersPath = $this->resolver->controllerPath($module);
+        $servicesPath = $this->resolver->servicePath($module);
+        $resourcesPath = $this->resolver->resourcePath($module);
+        $requestsPath = $this->resolver->requestPath($module);
+        $policiesPath = $this->resolver->policyPath($module);
+        $routesPath = $this->resolver->routePath($module);
+        $migrationsPath = $this->resolver->migrationPath($module);
         
         $filesToDelete = [
             "{$modelsPath}/{$model}.php",
@@ -88,11 +88,40 @@ class CrudModuleDeleterService
                 File::delete($file);
             }
         }
-        
-        // Clean up the request directory if empty
-        $requestDir = "{$requestsPath}/{$model}";
-        if (File::isDirectory($requestDir) && count(File::files($requestDir)) === 0) {
-            File::deleteDirectory($requestDir);
+        // Collect all directories that might be empty now
+        $directoriesToCheck = array_unique([
+            $requestsPath . '/' . $model,
+            $modelsPath,
+            $controllersPath,
+            $servicesPath,
+            $resourcesPath,
+            $requestsPath,
+            $policiesPath,
+            $routesPath,
+            $migrationsPath,
+        ]);
+
+        // Add the root domain folder to be checked last
+        if ($module->target_project_path) {
+            $domain = $module->domain_folder ?: $module->slug;
+            $directoriesToCheck[] = rtrim($module->target_project_path, '/\\') . '/' . $domain;
+        } elseif ($module->domain_folder) {
+            $directoriesToCheck[] = base_path('app/Modules/' . $module->domain_folder);
+        }
+
+        // Sort directories by length descending, so deeper folders (like Requests/Model) are deleted before their parents (like Requests)
+        usort($directoriesToCheck, function($a, $b) {
+            return strlen($b) - strlen($a);
+        });
+
+        foreach ($directoriesToCheck as $dir) {
+            if (File::isDirectory($dir)) {
+                // If the directory is completely empty, delete it
+                $files = array_diff(scandir($dir), ['.', '..']);
+                if (empty($files)) {
+                    rmdir($dir);
+                }
+            }
         }
     }
 }

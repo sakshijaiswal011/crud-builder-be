@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Services;
+namespace {{ namespace }};
 
 use {{ model_fqcn }};
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;

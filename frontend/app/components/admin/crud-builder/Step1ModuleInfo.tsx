@@ -34,6 +34,8 @@ export default function Step1ModuleInfo({
 
   function handleNameChange(name: string) {
     const slug = slugify(name);
+    const domain = name.split(/[^a-zA-Z0-9]+/).map(w => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase()).join('');
+    
     onChange({
       ...value,
       name,
@@ -41,6 +43,7 @@ export default function Step1ModuleInfo({
       table_name: value.table_name || toTableName(name),
       api_prefix: value.api_prefix || slug,
       menu_name: value.menu_name || name,
+      domain_folder: value.domain_folder || domain,
     });
   }
 
@@ -223,6 +226,34 @@ export default function Step1ModuleInfo({
             <option value="active">active</option>
             <option value="inactive">inactive</option>
           </select>
+        </div>
+
+        <div>
+          <label className={labelClass} htmlFor="target_project_path">
+            Target Project Path
+          </label>
+          <input
+            id="target_project_path"
+            className={wizardInputClass}
+            value={value.target_project_path}
+            onChange={(e) => update("target_project_path", e.target.value)}
+            placeholder="e.g. C:\xampp\htdocs\my_other_project"
+          />
+          <p className="mt-1 text-xs text-slate-500">Leave blank to generate in current project.</p>
+        </div>
+
+        <div>
+          <label className={labelClass} htmlFor="domain_folder">
+            Module Folder Name
+          </label>
+          <input
+            id="domain_folder"
+            className={wizardInputClass}
+            value={value.domain_folder}
+            onChange={(e) => update("domain_folder", e.target.value)}
+            placeholder="e.g. Posts"
+          />
+          <p className="mt-1 text-xs text-slate-500">Generates into app/Modules/{value.domain_folder || "..."}/</p>
         </div>
 
         <div className="flex items-end gap-6 pb-2">

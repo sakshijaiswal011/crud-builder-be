@@ -5,6 +5,7 @@ namespace App\Services\Crud\Generators;
 use App\Models\CrudModule;
 use App\Services\Crud\Support\CrudClassNameResolver;
 use App\Services\Crud\Support\StubRenderer;
+use Illuminate\Support\Facades\File;
 
 class RouteGenerator
 {
@@ -15,7 +16,12 @@ class RouteGenerator
 
     public function generate(CrudModule $module): string
     {
-        $routesPath = config('crud-builder.paths.routes', base_path('routes/modules'));
+        $routesPath = $this->names->routePath($module);
+        
+        if (!File::isDirectory($routesPath)) {
+            File::makeDirectory($routesPath, 0755, true);
+        }
+        
         $destination = $routesPath . '/' . $this->names->routeFile($module) . '.php';
 
         $path = $this->stubs->renderFile(

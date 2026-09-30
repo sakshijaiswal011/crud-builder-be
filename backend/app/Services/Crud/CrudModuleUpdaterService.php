@@ -64,7 +64,7 @@ class CrudModuleUpdaterService
         $alterMigrationPath = $transactionResult['alter_migration_path'];
         $module = $transactionResult['module'];
 
-        if ($alterMigrationPath) {
+        if ($alterMigrationPath && empty($module->target_project_path)) {
             Artisan::call('migrate', [
                 '--force' => true,
                 '--path' => 'database/migrations/'.basename($alterMigrationPath),
@@ -98,6 +98,8 @@ class CrudModuleUpdaterService
             'soft_delete' => (bool) ($payload['soft_delete'] ?? false),
             'audit_log' => (bool) ($payload['audit_log'] ?? false),
             'status' => $payload['status'] ?? $module->status,
+            'target_project_path' => $payload['target_project_path'] ?? $module->target_project_path,
+            'domain_folder' => $payload['domain_folder'] ?? $module->domain_folder,
             'generate_api_controller_routes' => $module->generate_api_controller_routes
                 || (bool) ($payload['generate_api_controller_routes'] ?? false),
             'generate_api_resource' => $module->generate_api_resource

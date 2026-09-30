@@ -21,6 +21,8 @@ class StoreCrudModuleRequest extends ApiFormRequest
             'soft_delete' => ['sometimes', 'boolean'],
             'audit_log' => ['sometimes', 'boolean'],
             'status' => ['sometimes', Rule::in(['draft', 'active', 'inactive'])],
+            'target_project_path' => ['nullable', 'string', 'max:255'],
+            'domain_folder' => ['nullable', 'string', 'max:100', 'alpha_dash'],
         ];
     }
 

@@ -22,8 +22,8 @@ class RequestGenerator
     {
         $rules = $this->builder->build($module);
         $model = $this->names->model($module);
-        $baseDir = config('crud-builder.paths.requests', app_path('Http/Requests'));
-        $dir = $baseDir . '/' . $model;
+        $dir = $this->names->requestPath($module) . '/' . $model;
+        $namespace = $this->names->requestNamespace($module) . '\\' . $model;
 
         $storeClass = $this->names->storeRequest($module);
         $updateClass = $this->names->updateRequest($module);
@@ -32,6 +32,7 @@ class RequestGenerator
             $this->stubs->stubPath('store-request.stub'),
             $dir.'/'.$storeClass.'.php',
             [
+                'namespace' => $namespace,
                 'model' => $model,
                 'class' => $storeClass,
                 'rules' => $rules['store_rules'],
@@ -42,6 +43,7 @@ class RequestGenerator
             $this->stubs->stubPath('update-request.stub'),
             $dir.'/'.$updateClass.'.php',
             [
+                'namespace' => $namespace,
                 'model' => $model,
                 'class' => $updateClass,
                 'rules' => $rules['update_rules'],

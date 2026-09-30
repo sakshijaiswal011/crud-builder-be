@@ -45,7 +45,7 @@ class ModelDefinitionBuilder
         $casts = $this->buildCasts($module);
 
         return [
-            'namespace' => $this->names->modelNamespace(),
+            'namespace' => $this->names->modelNamespace($module),
             'class' => $this->names->model($module),
             'table' => $module->table_name,
             'imports' => implode("\n", $imports),

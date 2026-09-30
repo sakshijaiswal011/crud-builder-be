@@ -32,8 +32,9 @@ class ServiceGenerator
 
         return $this->stubs->renderFile(
             $this->stubs->stubPath('service.stub'),
-            config('crud-builder.paths.services', app_path('Services')) . '/' . $this->names->service($module) . '.php',
+            $this->names->servicePath($module) . '/' . $this->names->service($module) . '.php',
             [
+                'namespace' => $this->names->serviceNamespace($module),
                 'class' => $this->names->service($module),
                 'model' => $this->names->model($module),
                 'model_fqcn' => $this->names->modelFqcn($module),

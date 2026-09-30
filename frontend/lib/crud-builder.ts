@@ -26,6 +26,8 @@ export type ModuleInfoForm = {
   soft_delete: boolean;
   audit_log: boolean;
   status: ModuleStatus;
+  target_project_path: string;
+  domain_folder: string;
 };
 
 export type RelationType = "hasOne" | "hasMany" | "belongsTo" | "belongsToMany";
@@ -255,6 +257,8 @@ export function createInitialWizardState(): CrudBuilderWizardState {
       soft_delete: false,
       audit_log: false,
       status: "draft",
+      target_project_path: "",
+      domain_folder: "",
     },
     fields: [createEmptyField()],
     relationships: [],
@@ -306,6 +310,8 @@ export function buildCreateModulePayload(state: CrudBuilderWizardState): Record<
     soft_delete: m.soft_delete,
     audit_log: m.audit_log,
     status: m.status,
+    target_project_path: m.target_project_path?.trim() || null,
+    domain_folder: m.domain_folder?.trim() || null,
     generate_api_controller_routes: state.generation.generate_api_controller_routes,
     generate_api_resource: state.generation.generate_api_resource,
     generate_policy: state.generation.generate_policy,
@@ -420,6 +426,8 @@ export function mapCrudModuleToWizardState(
         soft_delete: Boolean(module.soft_delete),
         audit_log: Boolean(module.audit_log),
         status: (module.status as ModuleStatus) || "draft",
+        target_project_path: (module as any).target_project_path ?? "",
+        domain_folder: (module as any).domain_folder ?? "",
       },
       fields,
       relationships: (module.relationships ?? []).map((rel) => ({

@@ -43,7 +43,7 @@ class CrudModuleCreatorService
 
         $generated = $this->generator->generate($module);
 
-        if (! empty($generated['migration'])) {
+        if (! empty($generated['migration']) && empty($module->target_project_path)) {
             Artisan::call('migrate', [
                 '--force' => true,
                 '--path' => 'database/migrations/'.basename($generated['migration']),
@@ -87,6 +87,8 @@ class CrudModuleCreatorService
             'soft_delete' => (bool) ($payload['soft_delete'] ?? false),
             'audit_log' => (bool) ($payload['audit_log'] ?? false),
             'status' => $payload['status'] ?? 'draft',
+            'target_project_path' => $payload['target_project_path'] ?? null,
+            'domain_folder' => $payload['domain_folder'] ?? null,
             'generate_api_controller_routes' => (bool) ($payload['generate_api_controller_routes'] ?? true),
             'generate_api_resource' => (bool) ($payload['generate_api_resource'] ?? true),
             'generate_policy' => (bool) ($payload['generate_policy'] ?? true),
