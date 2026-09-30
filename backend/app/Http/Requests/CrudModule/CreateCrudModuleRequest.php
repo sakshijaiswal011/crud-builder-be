@@ -39,18 +39,12 @@ class CreateCrudModuleRequest extends ApiFormRequest
                 'string',
                 'max:50',
                 Rule::in([
-                    'string', 'varchar', 'char', 'text', 'longText', 'long_text', 'mediumText', 'medium_text',
-                    'integer', 'int', 'bigInteger', 'big_integer', 'bigint',
-                    'unsignedBigInteger', 'unsigned_big_integer',
-                    'smallInteger', 'small_integer', 'tinyInteger', 'tiny_integer',
-                    'decimal', 'float', 'double',
-                    'boolean', 'bool',
-                    'date', 'datetime', 'timestamp', 'time',
-                    'json', 'uuid', 'ulid',
-                    'foreignId', 'foreign_id',
+                    'string', 'text', 'integer', 'bigInteger', 'decimal', 'boolean',
+                    'date', 'datetime', 'timestamp', 'json', 'foreignId', 'enum',
                 ]),
             ],
             'fields.*.length' => ['nullable', 'integer', 'min:1'],
+            'fields.*.enum_values' => ['nullable', 'string'],
             'fields.*.nullable' => ['sometimes', 'boolean'],
             'fields.*.default_value' => ['nullable', 'string'],
             'fields.*.is_unique' => ['sometimes', 'boolean'],
@@ -123,6 +117,26 @@ class CreateCrudModuleRequest extends ApiFormRequest
                 }
             }
 
+            foreach ($this->input('fields', []) as $index => $field) {
+                if (($field['type'] ?? '') === 'enum' && trim((string) ($field['enum_values'] ?? '')) === '') {
+                    $validator->errors()->add(
+                        "fields.{$index}.enum_values",
+                        'Enum values are required (comma-separated).'
+                    );
+                }
+
+                $defaultValue = trim((string) ($field['default_value'] ?? ''));
+                if (($field['type'] ?? '') === 'enum' && $defaultValue !== '') {
+                    $options = $this->parseEnumValuesList((string) ($field['enum_values'] ?? ''));
+                    if ($options !== [] && ! in_array($defaultValue, $options, true)) {
+                        $validator->errors()->add(
+                            "fields.{$index}.default_value",
+                            'Default value must be one of the enum options.'
+                        );
+                    }
+                }
+            }
+
             $formFieldNames = collect($this->input('forms_list', []))->pluck('field_name');
             if ($formFieldNames->count() !== $formFieldNames->unique()->count()) {
                 $validator->errors()->add('forms_list', 'field_name must be unique within forms_list.');
@@ -157,5 +171,16 @@ class CreateCrudModuleRequest extends ApiFormRequest
                 $validator->errors()->add('permissions', 'action must be unique within the module.');
             }
         });
+    }
+
+    /**
+     * @return array<int, string>
+     */
+    protected function parseEnumValuesList(string $raw): array
+    {
+        return array_values(array_filter(array_map(
+            'trim',
+            explode(',', $raw)
+        ), fn (string $part) => $part !== ''));
     }
 }

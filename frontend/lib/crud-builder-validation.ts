@@ -1,8 +1,10 @@
 import {
   CrudBuilderWizardState,
   FieldFormRow,
+  fieldTypeUsesLength,
   FormListFormRow,
   ModuleInfoForm,
+  parseEnumValuesList,
   parseValidationRulesJson,
   PermissionFormRow,
   RelationshipFormRow,
@@ -57,6 +59,26 @@ export function validateStep2Fields(fields: FieldFormRow[]): WizardFieldErrors {
 
     if (!/^[a-z][a-z0-9_]*$/.test(field.field_name)) {
       errors[key] = "Field name must start with a letter and use snake_case.";
+    }
+
+    if (field.type === "enum" && !field.enum_values.trim()) {
+      errors[`fields.${field.id}.enum_values`] =
+        "Enter comma-separated enum values (e.g. active,inactive,draft).";
+    }
+
+    if (fieldTypeUsesLength(field.type) && field.length.trim()) {
+      if (!/^\d+$/.test(field.length.trim())) {
+        errors[`fields.${field.id}.length`] = "Length must be a number.";
+      }
+    }
+
+    if (field.type === "enum" && field.default_value.trim()) {
+      const options = parseEnumValuesList(field.enum_values);
+      const defaultValue = field.default_value.trim();
+      if (options.length > 0 && !options.includes(defaultValue)) {
+        errors[`fields.${field.id}.default_value`] =
+          "Default value must be one of the enum options.";
+      }
     }
 
     const list = nameToIds.get(field.field_name) ?? [];

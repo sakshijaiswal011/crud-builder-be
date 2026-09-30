@@ -17,18 +17,12 @@ class StoreCrudModuleFieldsRequest extends ApiFormRequest
                 'string',
                 'max:50',
                 Rule::in([
-                    'string', 'varchar', 'char', 'text', 'longText', 'long_text', 'mediumText', 'medium_text',
-                    'integer', 'int', 'bigInteger', 'big_integer', 'bigint',
-                    'unsignedBigInteger', 'unsigned_big_integer',
-                    'smallInteger', 'small_integer', 'tinyInteger', 'tiny_integer',
-                    'decimal', 'float', 'double',
-                    'boolean', 'bool',
-                    'date', 'datetime', 'timestamp', 'time',
-                    'json', 'uuid', 'ulid',
-                    'foreignId', 'foreign_id',
+                    'string', 'text', 'integer', 'bigInteger', 'decimal', 'boolean',
+                    'date', 'datetime', 'timestamp', 'json', 'foreignId', 'enum',
                 ]),
             ],
             'fields.*.length' => ['nullable', 'integer', 'min:1'],
+            'fields.*.enum_values' => ['nullable', 'string'],
             'fields.*.nullable' => ['sometimes', 'boolean'],
             'fields.*.default_value' => ['nullable', 'string'],
             'fields.*.is_unique' => ['sometimes', 'boolean'],
@@ -51,6 +45,37 @@ class StoreCrudModuleFieldsRequest extends ApiFormRequest
                     $validator->errors()->add("fields.{$index}.field_name", "The field name [{$name}] is reserved.");
                 }
             }
+
+            foreach ($this->input('fields', []) as $index => $field) {
+                if (($field['type'] ?? '') === 'enum' && trim((string) ($field['enum_values'] ?? '')) === '') {
+                    $validator->errors()->add(
+                        "fields.{$index}.enum_values",
+                        'Enum values are required (comma-separated).'
+                    );
+                }
+
+                $defaultValue = trim((string) ($field['default_value'] ?? ''));
+                if (($field['type'] ?? '') === 'enum' && $defaultValue !== '') {
+                    $options = $this->parseEnumValuesList((string) ($field['enum_values'] ?? ''));
+                    if ($options !== [] && ! in_array($defaultValue, $options, true)) {
+                        $validator->errors()->add(
+                            "fields.{$index}.default_value",
+                            'Default value must be one of the enum options.'
+                        );
+                    }
+                }
+            }
         });
+    }
+
+    /**
+     * @return array<int, string>
+     */
+    protected function parseEnumValuesList(string $raw): array
+    {
+        return array_values(array_filter(array_map(
+            'trim',
+            explode(',', $raw)
+        ), fn (string $part) => $part !== ''));
     }
 }

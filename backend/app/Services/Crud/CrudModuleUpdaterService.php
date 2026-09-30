@@ -134,6 +134,7 @@ class CrudModuleUpdaterService
                 $field->update([
                     'type' => $row['type'],
                     'length' => $row['length'] ?? null,
+                    'enum_values' => $row['enum_values'] ?? null,
                     'nullable' => (bool) ($row['nullable'] ?? false),
                     'default_value' => $row['default_value'] ?? null,
                     'is_unique' => (bool) ($row['is_unique'] ?? false),
@@ -150,6 +151,7 @@ class CrudModuleUpdaterService
                 'field_name' => $row['field_name'],
                 'type' => $row['type'],
                 'length' => $row['length'] ?? null,
+                'enum_values' => $row['enum_values'] ?? null,
                 'nullable' => (bool) ($row['nullable'] ?? false),
                 'default_value' => $row['default_value'] ?? null,
                 'is_unique' => (bool) ($row['is_unique'] ?? false),

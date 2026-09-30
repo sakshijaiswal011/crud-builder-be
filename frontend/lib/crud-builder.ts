@@ -43,8 +43,8 @@ export type FieldType =
   | "datetime"
   | "timestamp"
   | "json"
-  | "uuid"
-  | "foreignId";
+  | "foreignId"
+  | "enum";
 
 export type FieldFormRow = {
   id: string;
@@ -52,12 +52,29 @@ export type FieldFormRow = {
   field_name: string;
   type: FieldType;
   length: string;
+  /** Comma-separated enum options when type is enum */
+  enum_values: string;
   nullable: boolean;
   default_value: string;
   is_unique: boolean;
   is_indexed: boolean;
   comment: string;
 };
+
+export function fieldTypeUsesLength(type: FieldType): boolean {
+  return type === "string" || type === "integer";
+}
+
+export function fieldTypeUsesEnumValues(type: FieldType): boolean {
+  return type === "enum";
+}
+
+export function parseEnumValuesList(raw: string): string[] {
+  return raw
+    .split(",")
+    .map((part) => part.trim())
+    .filter((part) => part !== "");
+}
 
 export type RelationshipFormRow = {
   id: string;
@@ -124,8 +141,8 @@ export const FIELD_TYPE_OPTIONS: { value: FieldType; label: string }[] = [
   { value: "datetime", label: "datetime" },
   { value: "timestamp", label: "timestamp" },
   { value: "json", label: "json" },
-  { value: "uuid", label: "uuid" },
   { value: "foreignId", label: "foreignId" },
+  { value: "enum", label: "enum" },
 ];
 
 export const RELATION_TYPE_OPTIONS: { value: RelationType; label: string }[] = [
@@ -147,6 +164,7 @@ export function createEmptyField(): FieldFormRow {
     field_name: "",
     type: "string",
     length: "255",
+    enum_values: "",
     nullable: false,
     default_value: "",
     is_unique: false,
@@ -201,8 +219,10 @@ export function buildFormsListFromFields(
       const inputType: FormInputType = relationship
         ? "select"
         : field.type === "integer" || field.type === "decimal"
-        ? "number"
-        : "text";
+          ? "number"
+          : field.type === "enum"
+            ? "select"
+            : "text";
 
       return {
         field_name: field.field_name,
@@ -319,7 +339,10 @@ export function buildCreateModulePayload(state: CrudBuilderWizardState): Record<
     fields: state.fields.map((field) => ({
       field_name: field.field_name,
       type: field.type,
-      length: field.length ? Number(field.length) : null,
+      length: fieldTypeUsesLength(field.type) && field.length ? Number(field.length) : null,
+      enum_values: fieldTypeUsesEnumValues(field.type)
+        ? field.enum_values.trim() || null
+        : null,
       nullable: field.nullable,
       default_value: field.default_value || null,
       is_unique: field.is_unique,
@@ -380,6 +403,7 @@ export function mapCrudModuleToWizardState(
     field_name: field.field_name,
     type: (field.type as FieldType) || "string",
     length: field.length ? String(field.length) : "",
+    enum_values: field.enum_values ?? "",
     nullable: field.nullable,
     default_value: field.default_value ?? "",
     is_unique: field.is_unique,
@@ -462,7 +486,10 @@ export function buildUpdateModulePayload(state: CrudBuilderWizardState): Record<
       ...(field.db_id ? { id: field.db_id } : {}),
       field_name: field.field_name,
       type: field.type,
-      length: field.length ? Number(field.length) : null,
+      length: fieldTypeUsesLength(field.type) && field.length ? Number(field.length) : null,
+      enum_values: fieldTypeUsesEnumValues(field.type)
+        ? field.enum_values.trim() || null
+        : null,
       nullable: field.nullable,
       default_value: field.default_value || null,
       is_unique: field.is_unique,

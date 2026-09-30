@@ -103,6 +103,7 @@ class CrudModuleCreatorService
                 'field_name' => $field['field_name'],
                 'type' => $field['type'],
                 'length' => $field['length'] ?? null,
+                'enum_values' => $field['enum_values'] ?? null,
                 'nullable' => (bool) ($field['nullable'] ?? false),
                 'default_value' => $field['default_value'] ?? null,
                 'is_unique' => (bool) ($field['is_unique'] ?? false),

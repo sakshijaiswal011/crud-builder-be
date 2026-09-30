@@ -18,6 +18,7 @@ class CrudField extends Model
         'field_name',
         'type',
         'length',
+        'enum_values',
         'nullable',
         'default_value',
         'is_unique',

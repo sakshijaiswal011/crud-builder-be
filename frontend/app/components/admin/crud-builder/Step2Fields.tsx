@@ -11,6 +11,8 @@ import {
   FIELD_TYPE_OPTIONS,
   FieldFormRow,
   FieldType,
+  fieldTypeUsesEnumValues,
+  fieldTypeUsesLength,
 } from "@/lib/crud-builder";
 import { WizardFieldErrors } from "@/lib/crud-builder-validation";
 
@@ -23,6 +25,20 @@ type Step2FieldsProps = {
 export default function Step2Fields({ fields, errors = {}, onChange }: Step2FieldsProps) {
   function updateRow(id: string, patch: Partial<FieldFormRow>) {
     onChange(fields.map((field) => (field.id === id ? { ...field, ...patch } : field)));
+  }
+
+  function handleTypeChange(id: string, type: FieldType) {
+    const patch: Partial<FieldFormRow> = { type };
+    if (!fieldTypeUsesLength(type)) {
+      patch.length = "";
+    }
+    if (!fieldTypeUsesEnumValues(type)) {
+      patch.enum_values = "";
+    }
+    if (type === "string" && !fields.find((f) => f.id === id)?.length) {
+      patch.length = "255";
+    }
+    updateRow(id, patch);
   }
 
   function removeRow(id: string) {
@@ -56,6 +72,11 @@ export default function Step2Fields({ fields, errors = {}, onChange }: Step2Fiel
       <div className="space-y-4">
         {fields.map((field, index) => {
           const fieldNameError = errors[`fields.${field.id}.field_name`];
+          const lengthError = errors[`fields.${field.id}.length`];
+          const defaultValueError = errors[`fields.${field.id}.default_value`];
+          const enumValuesError = errors[`fields.${field.id}.enum_values`];
+          const showLength = fieldTypeUsesLength(field.type);
+          const showEnumValues = fieldTypeUsesEnumValues(field.type);
 
           return (
           <div
@@ -110,7 +131,7 @@ export default function Step2Fields({ fields, errors = {}, onChange }: Step2Fiel
                   className={wizardCompactInputClass}
                   value={field.type}
                   onChange={(e) =>
-                    updateRow(field.id, { type: e.target.value as FieldType })
+                    handleTypeChange(field.id, e.target.value as FieldType)
                   }
                 >
                   {FIELD_TYPE_OPTIONS.map((option) => (
@@ -121,31 +142,61 @@ export default function Step2Fields({ fields, errors = {}, onChange }: Step2Fiel
                 </select>
               </div>
 
-              <div>
-                <label className="mb-1 block text-xs font-medium text-slate-600">
-                  Length
-                </label>
-                <input
-                  className={wizardCompactInputClass}
-                  value={field.length}
-                  onChange={(e) => updateRow(field.id, { length: e.target.value })}
-                  placeholder="Enter length"
-                />
-              </div>
+              {showLength ? (
+                <div>
+                  <label className="mb-1 block text-xs font-medium text-slate-600">
+                    Length
+                  </label>
+                  <input
+                    className={inputClassWithError(wizardCompactInputClass, lengthError)}
+                    value={field.length}
+                    onChange={(e) =>
+                      updateRow(field.id, {
+                        length: e.target.value.replace(/\D/g, ""),
+                      })
+                    }
+                    inputMode="numeric"
+                    placeholder="Enter length"
+                    aria-invalid={Boolean(lengthError)}
+                  />
+                  <FieldErrorText message={lengthError} />
+                </div>
+              ) : null}
 
               <div>
                 <label className="mb-1 block text-xs font-medium text-slate-600">
                   Default Value
                 </label>
                 <input
-                  className={wizardCompactInputClass}
+                  className={inputClassWithError(wizardCompactInputClass, defaultValueError)}
                   value={field.default_value}
                   onChange={(e) =>
                     updateRow(field.id, { default_value: e.target.value })
                   }
                   placeholder="Enter default value"
+                  aria-invalid={Boolean(defaultValueError)}
                 />
+                <FieldErrorText message={defaultValueError} />
               </div>
+
+              {showEnumValues ? (
+                <div className="md:col-span-2 xl:col-span-4">
+                  <label className="mb-1 block text-xs font-medium text-slate-600">
+                    Values
+                  </label>
+                  <input
+                    className={inputClassWithError(wizardCompactInputClass, enumValuesError)}
+                    value={field.enum_values}
+                    onChange={(e) => updateRow(field.id, { enum_values: e.target.value })}
+                    placeholder="active,inactive,draft,pending"
+                    aria-invalid={Boolean(enumValuesError)}
+                  />
+                  <FieldErrorText message={enumValuesError} />
+                  <p className="mt-1 text-xs text-slate-500">
+                    Comma-separated options saved as <code className="text-slate-600">enum_values</code>.
+                  </p>
+                </div>
+              ) : null}
 
               <div className="md:col-span-2 xl:col-span-4">
                 <label className="mb-1 block text-xs font-medium text-slate-600">

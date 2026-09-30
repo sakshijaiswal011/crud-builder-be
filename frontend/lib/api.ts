@@ -5,6 +5,7 @@ export type CrudFieldMeta = {
   field_name: string;
   type: string;
   length: number | null;
+  enum_values?: string | null;
   nullable: boolean;
   default_value: string | null;
   is_unique: boolean;

@@ -99,9 +99,8 @@ class MigrationDefinitionBuilder
             'timestamp' => "->timestamp('{$name}')",
             'time' => "->time('{$name}')",
             'json' => "->json('{$name}')",
-            'uuid' => "->uuid('{$name}')",
-            'ulid' => "->ulid('{$name}')",
             'foreignid', 'foreign_id' => "->foreignId('{$name}')",
+            'enum' => $this->buildEnumColumn($field),
             default => "->string('{$name}')",
         };
 
@@ -124,6 +123,21 @@ class MigrationDefinitionBuilder
         }
 
         return $line.';';
+    }
+
+    protected function buildEnumColumn(CrudField $field): string
+    {
+        $name = $field->field_name;
+        $values = array_values(array_filter(array_map(
+            'trim',
+            explode(',', (string) ($field->enum_values ?? ''))
+        )));
+
+        if ($values === []) {
+            return "->string('{$name}')";
+        }
+
+        return '->enum(\''.$name.'\', '.var_export($values, true).')';
     }
 
     protected function formatDefault(string $value, string $type): string
