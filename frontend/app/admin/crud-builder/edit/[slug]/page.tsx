@@ -173,6 +173,7 @@ export default function CrudBuilderEditPage() {
             <Step3Relationships
               moduleName={wizard.module.name}
               currentSlug={wizard.module.slug}
+              fields={wizard.fields}
               relationships={wizard.relationships}
               errors={fieldErrors}
               onChange={(relationships) => {

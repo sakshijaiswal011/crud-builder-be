@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import {
   createEmptyRelationship,
+  FieldFormRow,
   RELATION_TYPE_OPTIONS,
   RelationshipFormRow,
   RelationType,
@@ -18,6 +19,7 @@ import { WizardFieldErrors } from "@/lib/crud-builder-validation";
 type Step3RelationshipsProps = {
   moduleName: string;
   currentSlug: string;
+  fields: FieldFormRow[];
   relationships: RelationshipFormRow[];
   errors?: WizardFieldErrors;
   onChange: (relationships: RelationshipFormRow[]) => void;
@@ -26,6 +28,7 @@ type Step3RelationshipsProps = {
 export default function Step3Relationships({
   moduleName,
   currentSlug,
+  fields,
   relationships,
   errors = {},
   onChange,
@@ -63,6 +66,10 @@ export default function Step3Relationships({
   }
 
   const displayName = moduleName.trim() || "this module";
+
+  const moduleFieldNames = fields
+    .map((field) => field.field_name.trim())
+    .filter((name) => name !== "" && name !== "id");
 
   return (
     <div className="space-y-5">
@@ -152,12 +159,30 @@ export default function Step3Relationships({
                 <label className="mb-1 block text-xs font-medium text-slate-600">
                   Foreign Key
                 </label>
-                <input
+                <select
                   className={wizardCompactInputClass}
                   value={row.foreign_key}
                   onChange={(e) => updateRow(row.id, { foreign_key: e.target.value })}
-                  placeholder="e.g. country_id"
-                />
+                  disabled={moduleFieldNames.length === 0}
+                >
+                  <option value="">
+                    {moduleFieldNames.length === 0
+                      ? "Add fields in step 2 first"
+                      : "Select column"}
+                  </option>
+                  {moduleFieldNames.map((name) => (
+                    <option key={name} value={name}>
+                      {name}
+                    </option>
+                  ))}
+                  {row.foreign_key &&
+                  !moduleFieldNames.includes(row.foreign_key) ? (
+                    <option value={row.foreign_key}>{row.foreign_key}</option>
+                  ) : null}
+                </select>
+                <p className="mt-1 text-xs text-slate-400">
+                  Column on this module (from step 2 fields)
+                </p>
               </div>
 
               <div>
