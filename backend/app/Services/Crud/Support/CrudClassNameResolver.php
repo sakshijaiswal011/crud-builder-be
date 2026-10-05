@@ -42,6 +42,21 @@ class CrudClassNameResolver
         return $this->model($module).'Policy';
     }
 
+    public function action(CrudModule $module, string $prefix = ''): string
+    {
+        return $prefix . $this->model($module) . 'Action';
+    }
+
+    public function query(CrudModule $module, string $suffix = 'List'): string
+    {
+        return $this->model($module) . $suffix . 'Query';
+    }
+
+    public function dto(CrudModule $module, string $prefix = ''): string
+    {
+        return $prefix . $this->model($module) . 'DTO';
+    }
+
     public function routeFile(CrudModule $module): string
     {
         return Str::snake(str_replace('-', '_', $module->slug));
@@ -75,9 +90,14 @@ class CrudClassNameResolver
         return $this->modelNamespace($module).'\\'.$this->model($module);
     }
 
+    public function getModuleDomainName(CrudModule $module): string
+    {
+        return Str::studly(Str::plural($module->slug)); // e.g., 'customers' -> 'Customers'
+    }
+
     public function basePath(CrudModule $module): string
     {
-        return $module->target_project_path ? rtrim($module->target_project_path, '/\\') : base_path();
+        return base_path();
     }
 
     public function appPath(CrudModule $module, string $path = ''): string
@@ -92,79 +112,63 @@ class CrudClassNameResolver
 
     public function getModulePath(CrudModule $module, string $defaultAppSubPath): string
     {
-        if ($module->target_project_path) {
-            $domain = $module->domain_folder ?: $module->slug;
-            $baseName = basename($defaultAppSubPath);
-            if (str_contains($defaultAppSubPath, 'Controllers')) $baseName = 'Controllers';
-            if (str_contains($defaultAppSubPath, 'Resources')) $baseName = 'Resources';
-            if (str_contains($defaultAppSubPath, 'Requests')) $baseName = 'Requests';
-            
-            return rtrim($module->target_project_path, '/\\') . '/' . $domain . '/' . $baseName;
-        }
-
-        if ($module->domain_folder) {
-            return $this->appPath($module, 'Modules/' . $module->domain_folder . '/' . basename($defaultAppSubPath));
-        }
-
-        return $this->appPath($module, $defaultAppSubPath);
+        $domain = $this->getModuleDomainName($module);
+        return $this->appPath($module, 'Modules/' . $domain . '/' . basename($defaultAppSubPath));
     }
 
     public function getModuleNamespace(CrudModule $module, string $defaultNamespace): string
     {
-        if ($module->domain_folder) {
-            $baseName = class_basename($defaultNamespace);
-            return 'App\\Modules\\' . $module->domain_folder . '\\' . $baseName;
-        }
-
-        return $defaultNamespace;
+        $domain = $this->getModuleDomainName($module);
+        $baseName = class_basename($defaultNamespace);
+        return 'App\\Modules\\' . $domain . '\\' . $baseName;
     }
 
     public function modelNamespace(CrudModule $module = null): string
     {
-        if ($module && $module->domain_folder) {
-            return 'App\\Modules\\' . $module->domain_folder . '\\Models';
+        if ($module) {
+            return 'App\\Modules\\' . $this->getModuleDomainName($module) . '\\Models';
         }
         return config('crud-builder.namespaces.models', 'App\\Models');
     }
 
     public function controllerNamespace(CrudModule $module): string
     {
-        if ($module->domain_folder) {
-            return 'App\\Modules\\' . $module->domain_folder . '\\Controllers';
-        }
-        return config('crud-builder.namespaces.controllers', 'App\\Http\\Controllers\\Api');
+        return 'App\\Modules\\' . $this->getModuleDomainName($module) . '\\Controllers';
     }
 
     public function serviceNamespace(CrudModule $module): string
     {
-        if ($module->domain_folder) {
-            return 'App\\Modules\\' . $module->domain_folder . '\\Services';
-        }
-        return config('crud-builder.namespaces.services', 'App\\Services');
+        return 'App\\Modules\\' . $this->getModuleDomainName($module) . '\\Services';
     }
 
     public function resourceNamespace(CrudModule $module): string
     {
-        if ($module->domain_folder) {
-            return 'App\\Modules\\' . $module->domain_folder . '\\Resources';
-        }
-        return config('crud-builder.namespaces.resources', 'App\\Http\\Resources');
+        return 'App\\Modules\\' . $this->getModuleDomainName($module) . '\\Resources';
     }
 
     public function requestNamespace(CrudModule $module): string
     {
-        if ($module->domain_folder) {
-            return 'App\\Modules\\' . $module->domain_folder . '\\Requests';
-        }
-        return config('crud-builder.namespaces.requests', 'App\\Http\\Requests');
+        return 'App\\Modules\\' . $this->getModuleDomainName($module) . '\\Requests';
     }
 
     public function policyNamespace(CrudModule $module): string
     {
-        if ($module->domain_folder) {
-            return 'App\\Modules\\' . $module->domain_folder . '\\Policies';
-        }
-        return config('crud-builder.namespaces.policies', 'App\\Policies');
+        return 'App\\Modules\\' . $this->getModuleDomainName($module) . '\\Policies';
+    }
+
+    public function actionNamespace(CrudModule $module): string
+    {
+        return 'App\\Modules\\' . $this->getModuleDomainName($module) . '\\Actions';
+    }
+
+    public function queryNamespace(CrudModule $module): string
+    {
+        return 'App\\Modules\\' . $this->getModuleDomainName($module) . '\\Queries';
+    }
+
+    public function dtoNamespace(CrudModule $module): string
+    {
+        return 'App\\Modules\\' . $this->getModuleDomainName($module) . '\\DTOs';
     }
 
     public function modelPath(CrudModule $module): string
@@ -174,7 +178,7 @@ class CrudClassNameResolver
 
     public function controllerPath(CrudModule $module): string
     {
-        return $this->getModulePath($module, 'Http/Controllers/Api');
+        return $this->getModulePath($module, 'Controllers');
     }
 
     public function servicePath(CrudModule $module): string
@@ -184,12 +188,12 @@ class CrudClassNameResolver
 
     public function resourcePath(CrudModule $module): string
     {
-        return $this->getModulePath($module, 'Http/Resources');
+        return $this->getModulePath($module, 'Resources');
     }
 
     public function requestPath(CrudModule $module): string
     {
-        return $this->getModulePath($module, 'Http/Requests');
+        return $this->getModulePath($module, 'Requests');
     }
 
     public function policyPath(CrudModule $module): string
@@ -197,24 +201,28 @@ class CrudClassNameResolver
         return $this->getModulePath($module, 'Policies');
     }
 
+    public function actionPath(CrudModule $module): string
+    {
+        return $this->getModulePath($module, 'Actions');
+    }
+
+    public function queryPath(CrudModule $module): string
+    {
+        return $this->getModulePath($module, 'Queries');
+    }
+
+    public function dtoPath(CrudModule $module): string
+    {
+        return $this->getModulePath($module, 'DTOs');
+    }
+
     public function routePath(CrudModule $module): string
     {
-        if ($module->target_project_path) {
-            $domain = $module->domain_folder ?: $module->slug;
-            return rtrim($module->target_project_path, '/\\') . '/' . $domain . '/Routes';
-        }
-        if ($module->domain_folder) {
-            return $this->appPath($module, 'Modules/' . $module->domain_folder . '/Routes');
-        }
-        return config('crud-builder.paths.routes', $this->basePath($module) . '/routes/modules');
+        return $this->appPath($module, 'Modules/' . $this->getModuleDomainName($module) . '/Routes');
     }
 
     public function migrationPath(CrudModule $module): string
     {
-        if ($module->target_project_path) {
-            $domain = $module->domain_folder ?: $module->slug;
-            return rtrim($module->target_project_path, '/\\') . '/' . $domain . '/Migrations';
-        }
-        return config('crud-builder.paths.migrations', $this->databasePath($module, 'migrations'));
+        return $this->appPath($module, 'Modules/' . $this->getModuleDomainName($module) . '/Migrations');
     }
 }

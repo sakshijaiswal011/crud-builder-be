@@ -32,8 +32,6 @@ class CrudModule extends Model
         'list_pagination',
         'list_default_per_page',
         'list_max_per_page',
-        'target_project_path',
-        'domain_folder',
     ];
 
     protected function casts(): array

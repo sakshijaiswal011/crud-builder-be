@@ -35,10 +35,11 @@ class CrudModuleUpdaterService
             $previousSoftDelete = (bool) $module->soft_delete;
 
             $this->updateModuleMeta($module, $payload);
+            $this->syncRelationships($module, $payload['relationships'] ?? []);
+            
             $dropColumns = $this->removedFieldNames($module, $payload['fields']);
             $addFields = $this->syncFields($module, $payload['fields']);
 
-            $this->syncRelationships($module, $payload['relationships'] ?? []);
             $this->syncFormsList($module, $payload['forms_list']);
             $this->syncPermissions($module, $payload['permissions']);
 
@@ -64,10 +65,14 @@ class CrudModuleUpdaterService
         $alterMigrationPath = $transactionResult['alter_migration_path'];
         $module = $transactionResult['module'];
 
-        if ($alterMigrationPath && empty($module->target_project_path)) {
+        if ($alterMigrationPath) {
+            $normalizedPath = str_replace('\\', '/', $alterMigrationPath);
+            $normalizedBasePath = str_replace('\\', '/', base_path()) . '/';
+            $relativePath = str_replace($normalizedBasePath, '', $normalizedPath);
+
             Artisan::call('migrate', [
                 '--force' => true,
-                '--path' => 'database/migrations/'.basename($alterMigrationPath),
+                '--path' => $relativePath,
             ]);
         }
 

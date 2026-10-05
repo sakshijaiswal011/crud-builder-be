@@ -18,6 +18,6 @@ Route::prefix('crud-modules')->group(function () {
     Route::delete('/{module}', [CrudModuleController::class, 'destroy']);
 });
 
-foreach (glob(__DIR__.'/modules/*.php') ?: [] as $moduleRouteFile) {
+foreach (glob(__DIR__ . '/../app/Modules/*/Routes/*.php') ?: [] as $moduleRouteFile) {
     require $moduleRouteFile;
 }

@@ -50,31 +50,42 @@ class CrudModuleDeleterService
     {
         $model = $this->resolver->model($module);
         $controller = $this->resolver->controller($module);
-        $service = $this->resolver->service($module);
         $resource = $this->resolver->resource($module);
         $storeRequest = $this->resolver->storeRequest($module);
         $updateRequest = $this->resolver->updateRequest($module);
         $policy = $this->resolver->policy($module);
         $routeFile = $this->resolver->routeFile($module);
+        $queryList = $this->resolver->query($module, 'List');
+        
+        $actionCreate = $this->resolver->action($module, 'Create');
+        $actionUpdate = $this->resolver->action($module, 'Update');
+        $actionDelete = $this->resolver->action($module, 'Delete');
+        $dtoFilters = $model . 'FiltersDTO';
         
         $modelsPath = $this->resolver->modelPath($module);
         $controllersPath = $this->resolver->controllerPath($module);
-        $servicesPath = $this->resolver->servicePath($module);
         $resourcesPath = $this->resolver->resourcePath($module);
         $requestsPath = $this->resolver->requestPath($module);
         $policiesPath = $this->resolver->policyPath($module);
         $routesPath = $this->resolver->routePath($module);
         $migrationsPath = $this->resolver->migrationPath($module);
+        $actionsPath = $this->resolver->actionPath($module);
+        $queriesPath = $this->resolver->queryPath($module);
+        $dtosPath = $this->resolver->dtoPath($module);
         
         $filesToDelete = [
             "{$modelsPath}/{$model}.php",
             "{$controllersPath}/{$controller}.php",
-            "{$servicesPath}/{$service}.php",
             "{$resourcesPath}/{$resource}.php",
             "{$requestsPath}/{$model}/{$storeRequest}.php",
             "{$requestsPath}/{$model}/{$updateRequest}.php",
             "{$policiesPath}/{$policy}.php",
             "{$routesPath}/{$routeFile}.php",
+            "{$queriesPath}/{$queryList}.php",
+            "{$actionsPath}/{$actionCreate}.php",
+            "{$actionsPath}/{$actionUpdate}.php",
+            "{$actionsPath}/{$actionDelete}.php",
+            "{$dtosPath}/{$dtoFilters}.php",
         ];
 
         // Find and delete the migration file
@@ -93,21 +104,18 @@ class CrudModuleDeleterService
             $requestsPath . '/' . $model,
             $modelsPath,
             $controllersPath,
-            $servicesPath,
             $resourcesPath,
             $requestsPath,
             $policiesPath,
             $routesPath,
             $migrationsPath,
+            $actionsPath,
+            $queriesPath,
+            $dtosPath,
         ]);
 
         // Add the root domain folder to be checked last
-        if ($module->target_project_path) {
-            $domain = $module->domain_folder ?: $module->slug;
-            $directoriesToCheck[] = rtrim($module->target_project_path, '/\\') . '/' . $domain;
-        } elseif ($module->domain_folder) {
-            $directoriesToCheck[] = base_path('app/Modules/' . $module->domain_folder);
-        }
+        $directoriesToCheck[] = base_path('app/Modules/' . $this->resolver->getModuleDomainName($module));
 
         // Sort directories by length descending, so deeper folders (like Requests/Model) are deleted before their parents (like Requests)
         usort($directoriesToCheck, function($a, $b) {

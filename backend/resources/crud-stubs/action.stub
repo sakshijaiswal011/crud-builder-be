@@ -1,0 +1,13 @@
+<?php
+
+namespace {{ namespace }};
+
+use {{ model_fqcn }};
+
+class {{ class }}
+{
+    public function handle({{ params }}): {{ return_type }}
+    {
+{{ body }}
+    }
+}

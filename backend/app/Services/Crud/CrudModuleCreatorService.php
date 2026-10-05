@@ -43,10 +43,14 @@ class CrudModuleCreatorService
 
         $generated = $this->generator->generate($module);
 
-        if (! empty($generated['migration']) && empty($module->target_project_path)) {
+        if (! empty($generated['migration'])) {
+            $normalizedPath = str_replace('\\', '/', $generated['migration']);
+            $normalizedBasePath = str_replace('\\', '/', base_path()) . '/';
+            $relativePath = str_replace($normalizedBasePath, '', $normalizedPath);
+
             Artisan::call('migrate', [
                 '--force' => true,
-                '--path' => 'database/migrations/'.basename($generated['migration']),
+                '--path' => $relativePath,
             ]);
         }
 

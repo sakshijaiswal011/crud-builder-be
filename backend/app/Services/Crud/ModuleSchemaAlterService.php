@@ -7,12 +7,14 @@ use App\Models\CrudModule;
 use App\Services\Crud\Builders\MigrationDefinitionBuilder;
 use App\Services\Crud\Support\StubRenderer;
 use Illuminate\Support\Facades\Schema;
+use Illuminate\Support\Facades\File;
 
 class ModuleSchemaAlterService
 {
     public function __construct(
         protected MigrationDefinitionBuilder $columnBuilder,
-        protected StubRenderer $stubs
+        protected StubRenderer $stubs,
+        protected \App\Services\Crud\Support\CrudClassNameResolver $names
     ) {}
 
     /**
@@ -45,6 +47,9 @@ class ModuleSchemaAlterService
             if (! Schema::hasColumn($module->table_name, $column)) {
                 continue;
             }
+            $up[] = "            try {";
+            $up[] = "                \$table->dropForeign(['{$column}']);";
+            $up[] = "            } catch (\Exception \$e) {} // Ignore if no foreign key exists";
             $up[] = "            \$table->dropColumn('{$column}');";
             $down[] = '            //';
         }
@@ -67,8 +72,12 @@ class ModuleSchemaAlterService
             $down[] = '            //';
         }
 
-        $migrationsPath = config('crud-builder.paths.migrations', database_path('migrations'));
+        $migrationsPath = $this->names->migrationPath($module);
         
+        if (!File::isDirectory($migrationsPath)) {
+            File::makeDirectory($migrationsPath, 0755, true);
+        }
+
         return $this->stubs->renderFile(
             $this->stubs->stubPath('alter-migration.stub'),
             $migrationsPath . '/' . now()->format('Y_m_d_His') . '_alter_' . $module->table_name . '_table.php',

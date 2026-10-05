@@ -29,6 +29,7 @@ class RouteGenerator
             $destination,
             [
                 'controller' => $this->names->controller($module),
+                'controller_namespace' => $this->names->controllerNamespace($module),
                 'api_version' => $this->names->apiVersion($module),
                 'api_prefix' => $this->names->apiPrefix($module),
             ]

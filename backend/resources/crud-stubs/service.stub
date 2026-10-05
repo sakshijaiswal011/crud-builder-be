@@ -8,61 +8,32 @@ use Illuminate\Database\Eloquent\Collection;
 
 class {{ class }}
 {
-    public function __construct(
-        protected AuditLogService $auditLogService
-    ) {}
-
-    public function list(array $filters = []): LengthAwarePaginator|Collection
+    public function __construct()
     {
-        $query = {{ model }}::query();
-
-{{ with_block }}
-
-{{ search_block }}
-
-{{ sort_block }}
-
-        if (! empty($filters['per_page'])) {
-            return $query->paginate((int) $filters['per_page']);
-        }
-
-        return $query->get();
-    }
-
-    public function find(int $id): {{ model }}
-    {
-        return {{ model }}::query()->findOrFail($id);
+        // Inject dependencies here, e.g. AuditLogService
     }
 
     public function create(array $data): {{ model }}
     {
         $record = {{ model }}::query()->create($data);
 
-        $this->auditLogService->logRecordCreatedIfEnabled($record);
+        // Add any post-creation logic here (e.g. Audit Logging)
 
         return $record;
     }
 
     public function update({{ model }} ${{ variable }}, array $data): {{ model }}
     {
-        $oldValues = ${{ variable }}->attributesToArray();
-
         ${{ variable }}->update($data);
 
-        $record = ${{ variable }}->fresh();
+        // Add any post-update logic here (e.g. Audit Logging)
 
-        $this->auditLogService->logRecordUpdatedIfEnabled(
-            $record,
-            $oldValues,
-            $record->attributesToArray()
-        );
-
-        return $record;
+        return ${{ variable }}->fresh();
     }
 
     public function delete({{ model }} ${{ variable }}): bool
     {
-        $this->auditLogService->logRecordDeletedIfEnabled(${{ variable }});
+        // Add any pre-deletion logic here (e.g. Audit Logging)
 
         return (bool) ${{ variable }}->delete();
     }

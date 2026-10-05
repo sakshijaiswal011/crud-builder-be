@@ -10,7 +10,9 @@ use App\Services\Crud\Generators\PolicyGenerator;
 use App\Services\Crud\Generators\RequestGenerator;
 use App\Services\Crud\Generators\ResourceGenerator;
 use App\Services\Crud\Generators\RouteGenerator;
-use App\Services\Crud\Generators\ServiceGenerator;
+use App\Services\Crud\Generators\QueryGenerator;
+use App\Services\Crud\Generators\ActionGenerator;
+use App\Services\Crud\Generators\DTOGenerator;
 
 class CrudGenerator
 {
@@ -19,7 +21,9 @@ class CrudGenerator
         protected ModelGenerator $modelGenerator,
         protected RequestGenerator $requestGenerator,
         protected ResourceGenerator $resourceGenerator,
-        protected ServiceGenerator $serviceGenerator,
+        protected QueryGenerator $queryGenerator,
+        protected ActionGenerator $actionGenerator,
+        protected DTOGenerator $dtoGenerator,
         protected ControllerGenerator $controllerGenerator,
         protected PolicyGenerator $policyGenerator,
         protected RouteGenerator $routeGenerator,
@@ -41,7 +45,9 @@ class CrudGenerator
 
         if ($module->generate_api_controller_routes || $module->generate_api_resource) {
             $generated['requests'] = $this->requestGenerator->generate($module);
-            $generated['service'] = $this->serviceGenerator->generate($module);
+            $generated['dtos'] = $this->dtoGenerator->generate($module);
+            $generated['actions'] = $this->actionGenerator->generate($module);
+            $generated['queries'] = $this->queryGenerator->generate($module);
             $generated['resource'] = $this->resourceGenerator->generate($module);
         }
 
@@ -71,7 +77,9 @@ class CrudGenerator
 
         if ($module->generate_api_controller_routes || $module->generate_api_resource) {
             $generated['requests'] = $this->requestGenerator->generate($module);
-            $generated['service'] = $this->serviceGenerator->generate($module);
+            $generated['dtos'] = $this->dtoGenerator->generate($module);
+            $generated['actions'] = $this->actionGenerator->generate($module);
+            $generated['queries'] = $this->queryGenerator->generate($module);
             $generated['resource'] = $this->resourceGenerator->generate($module);
         }
 

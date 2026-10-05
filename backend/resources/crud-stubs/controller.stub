@@ -3,30 +3,23 @@
 namespace {{ namespace }};
 
 use App\Http\Controllers\Controller;
-use App\Http\Requests\{{ model }}\{{ store_request }};
-use App\Http\Requests\{{ model }}\{{ update_request }};
-use App\Http\Resources\{{ resource }};
-use App\Services\{{ service }};
+{{ imports }}
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
 
 class {{ class }} extends Controller
 {
-    public function __construct(
-        protected {{ service }} $service
-    ) {}
-
-    public function index(Request $request): AnonymousResourceCollection
+    public function index(Request $request, {{ query_list }} $query): AnonymousResourceCollection
     {
-        $items = $this->service->list($request->all());
+        $filters = new {{ filters_dto }}($request->all());
 
-        return {{ resource }}::collection($items);
+        return {{ resource }}::collection($query->handle($filters));
     }
 
-    public function store({{ store_request }} $request): JsonResponse
+    public function store({{ store_request }} $request, {{ action_create }} $action): JsonResponse
     {
-        $item = $this->service->create($request->validated());
+        $item = $action->handle($request->validated());
 
         return (new {{ resource }}($item))
             ->response()
@@ -35,19 +28,21 @@ class {{ class }} extends Controller
 
     public function show(int $id): {{ resource }}
     {
-        return new {{ resource }}($this->service->find($id));
+        return new {{ resource }}({{ model }}::findOrFail($id));
     }
 
-    public function update({{ update_request }} $request, int $id): {{ resource }}
+    public function update({{ update_request }} $request, int $id, {{ action_update }} $action): {{ resource }}
     {
-        $item = $this->service->update($this->service->find($id), $request->validated());
+        $item = {{ model }}::findOrFail($id);
+        $item = $action->handle($item, $request->validated());
 
         return new {{ resource }}($item);
     }
 
-    public function destroy(int $id): JsonResponse
+    public function destroy(int $id, {{ action_delete }} $action): JsonResponse
     {
-        $this->service->delete($this->service->find($id));
+        $item = {{ model }}::findOrFail($id);
+        $action->handle($item);
 
         return response()->json(['message' => 'Deleted successfully.']);
     }

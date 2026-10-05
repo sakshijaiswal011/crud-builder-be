@@ -29,7 +29,9 @@ class RelationshipDefinitionBuilder
                 continue;
             }
 
-            $imports[] = $built['import'];
+            foreach ($built['imports'] as $import) {
+                $imports[] = $import;
+            }
             $methods[] = $built['code'];
         }
 
@@ -40,7 +42,7 @@ class RelationshipDefinitionBuilder
     }
 
     /**
-     * @return array{import: string, code: string}|null
+     * @return array{imports: array<int, string>, code: string}|null
      */
     protected function buildMethod(CrudRelationship $relationship): ?array
     {
@@ -50,6 +52,7 @@ class RelationshipDefinitionBuilder
         }
 
         $relatedClass = $this->names->model($related);
+        $relatedFqcn = $this->names->modelFqcn($related);
         $methodName = $this->methodName($relationship, $related);
         $type = $relationship->relation_type;
 
@@ -88,7 +91,10 @@ class RelationshipDefinitionBuilder
 PHP;
 
         return [
-            'import' => "use Illuminate\\Database\\Eloquent\\Relations\\{$returnType};",
+            'imports' => [
+                "use Illuminate\\Database\\Eloquent\\Relations\\{$returnType};",
+                "use {$relatedFqcn};",
+            ],
             'code' => $code,
         ];
     }

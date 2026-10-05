@@ -1,6 +1,6 @@
 <?php
 
-use App\Http\Controllers\Api\{{ controller }};
+use {{ controller_namespace }}\{{ controller }};
 use Illuminate\Support\Facades\Route;
 
 Route::prefix('{{ api_version }}')->group(function () {

@@ -1,0 +1,27 @@
+<?php
+
+namespace {{ namespace }};
+
+use {{ model_fqcn }};
+use Illuminate\Contracts\Pagination\LengthAwarePaginator;
+use Illuminate\Database\Eloquent\Collection;
+{{ dto_import }}
+class {{ class }}
+{
+    public function handle({{ params }}): LengthAwarePaginator|Collection
+    {
+        $query = {{ model }}::query();
+
+{{ with_block }}
+
+{{ search_block }}
+
+{{ sort_block }}
+
+        if (! $filters->paginate) {
+            return $query->get();
+        }
+
+        return $query->paginate($filters->perPage);
+    }
+}
